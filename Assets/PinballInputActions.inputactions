@@ -1,0 +1,75 @@
+{
+    "version": 1,
+    "name": "PinballInputActions",
+    "maps": [
+        {
+            "name": "Gameplay",
+            "id": "e2c4f233-1949-4d77-b275-50258cd6435a",
+            "actions": [
+                {
+                    "name": "Launch",
+                    "type": "Button",
+                    "id": "6daafa6c-a51f-4802-8e69-62612e1b8c7c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "LeftFlipper",
+                    "type": "Button",
+                    "id": "fd990410-9e09-494c-9187-2e41190649f5",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RightFlipper",
+                    "type": "Button",
+                    "id": "64d987ce-5570-4089-8c15-cccb7ff5a8ce",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "b94e23f5-b683-4244-aaae-e385865be0cb",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Launch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e6247d81-e6c7-43c0-85ec-d37cde84ddb8",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LeftFlipper",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "da168860-a537-4600-87ef-7ee67fbe1720",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightFlipper",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
