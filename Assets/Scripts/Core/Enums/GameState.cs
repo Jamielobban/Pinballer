@@ -1,12 +1,12 @@
 public enum GameState
 {
     Boot,
+    ShopBuild,
     WaitingForBall,
     BallLoaded,
     BallLaunching,
     BallInPlay,
     ResolvingDrain,
-    ShopOpen,
     Paused,
     GameOver
 }

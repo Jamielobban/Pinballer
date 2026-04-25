@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class DrainZoneView : MonoBehaviour
 {
+    [SerializeField] private PlungerLauncher plungerLauncher;
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         BallView ballView = other.GetComponent<BallView>();
@@ -15,5 +17,10 @@ public class DrainZoneView : MonoBehaviour
         GameBootstrap.Context.Loop.OnBallDrained(runtimeData);
 
         Destroy(ballView.gameObject);
+
+        if (plungerLauncher != null)
+        {
+            plungerLauncher.TryLoadNextBallIfNeeded();
+        }
     }
 }

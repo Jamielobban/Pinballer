@@ -3,21 +3,29 @@ public class GameLoopController
     private readonly StateMachineService _stateMachine;
     private readonly BallReserveService _ballReserve;
     private readonly BallLifecycleService _ballLifecycle;
+    private readonly RoundService _rounds;
 
     public GameLoopController(
         StateMachineService stateMachine,
         BallReserveService ballReserve,
-        BallLifecycleService ballLifecycle)
+        BallLifecycleService ballLifecycle,
+        RoundService rounds)
     {
         _stateMachine = stateMachine;
         _ballReserve = ballReserve;
         _ballLifecycle = ballLifecycle;
+        _rounds = rounds;
     }
 
     public void StartGame()
     {
-        _stateMachine.EnterState(GameState.Boot);
-        TryPrepareNextBall();
+        _stateMachine.EnterState(GameState.ShopBuild);
+    }
+
+    public void StartRound()
+    {
+        _rounds.StartNextRound();
+        _stateMachine.EnterState(GameState.WaitingForBall);
     }
 
     public void OnBallLoaded()
@@ -43,23 +51,24 @@ public class GameLoopController
 
         if (_ballReserve.HasReserve())
         {
-            TryPrepareNextBall();
+            _stateMachine.EnterState(GameState.WaitingForBall);
             return;
         }
 
         if (_ballLifecycle.GetActiveBallCount() <= 0)
         {
-            _stateMachine.EnterState(GameState.GameOver);
+            EndRoundAndEnterShop();
+            return;
         }
-        else
-        {
-            _stateMachine.EnterState(GameState.BallInPlay);
-        }
+
+        _stateMachine.EnterState(GameState.BallInPlay);
     }
 
     public bool CanPrepareNextBall()
     {
-        return _ballReserve.HasReserve() && _ballLifecycle.LoadedBall == null;
+        return _stateMachine.IsInState(GameState.WaitingForBall)
+            && _ballReserve.HasReserve()
+            && _ballLifecycle.LoadedBall == null;
     }
 
     public bool TryConsumeReserveForNextBall()
@@ -70,21 +79,9 @@ public class GameLoopController
         return _ballReserve.TryConsumeOne();
     }
 
-    private void TryPrepareNextBall()
+    private void EndRoundAndEnterShop()
     {
-        if (_ballLifecycle.LoadedBall != null)
-        {
-            _stateMachine.EnterState(GameState.BallLoaded);
-            return;
-        }
-
-        if (_ballReserve.TryConsumeOne())
-        {
-            _stateMachine.EnterState(GameState.WaitingForBall);
-        }
-        else if (_ballLifecycle.GetActiveBallCount() <= 0)
-        {
-            _stateMachine.EnterState(GameState.GameOver);
-        }
+        _rounds.EndRound();
+        _stateMachine.EnterState(GameState.ShopBuild);
     }
 }

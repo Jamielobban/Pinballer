@@ -17,58 +17,101 @@ public class PlungerLauncher : MonoBehaviour
     private BallRuntimeData _loadedBallData;
     private float _currentCharge;
     private bool _isCharging;
+    private bool _subscribedToState;
 
     private void OnEnable()
     {
-        if (inputReader == null)
-            return;
-
-        inputReader.LaunchPressed += OnLaunchPressed;
-        inputReader.LaunchReleased += OnLaunchReleased;
-    }
-
-    private void OnDisable()
-    {
-        if (inputReader == null)
-            return;
-
-        inputReader.LaunchPressed -= OnLaunchPressed;
-        inputReader.LaunchReleased -= OnLaunchReleased;
+        if (inputReader != null)
+        {
+            inputReader.LaunchPressed += OnLaunchPressed;
+            inputReader.LaunchReleased += OnLaunchReleased;
+        }
     }
 
     private void Start()
     {
         if (GameBootstrap.Context == null)
         {
-            Debug.LogError("GameBootstrap not initialized.");
+            Debug.LogError("PlungerLauncher: GameBootstrap.Context is null.");
             return;
         }
 
         if (ballFactory == null)
         {
-            Debug.LogError("PlungerLauncher is missing BallFactory reference.");
+            Debug.LogError("PlungerLauncher: Missing BallFactory reference.");
             return;
         }
 
         if (loadedBallAnchor == null)
         {
-            Debug.LogError("PlungerLauncher is missing LoadedBallAnchor reference.");
+            Debug.LogError("PlungerLauncher: Missing LoadedBallAnchor reference.");
             return;
         }
 
         if (inputReader == null)
         {
-            Debug.LogError("PlungerLauncher is missing GameplayInputReader reference.");
+            Debug.LogError("PlungerLauncher: Missing GameplayInputReader reference.");
             return;
         }
 
-        TryLoadBall();
+        SubscribeToGameState();
+
+        if (GameBootstrap.Context.StateMachine.IsInState(GameState.WaitingForBall))
+        {
+            TryLoadNextBallIfNeeded();
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (inputReader != null)
+        {
+            inputReader.LaunchPressed -= OnLaunchPressed;
+            inputReader.LaunchReleased -= OnLaunchReleased;
+        }
+
+        UnsubscribeFromGameState();
     }
 
     private void Update()
     {
         KeepLoadedBallSnapped();
         UpdateCharge();
+    }
+
+    private void SubscribeToGameState()
+    {
+        if (_subscribedToState)
+            return;
+
+        if (GameBootstrap.Context == null)
+            return;
+
+        GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
+        _subscribedToState = true;
+    }
+
+    private void UnsubscribeFromGameState()
+    {
+        if (!_subscribedToState)
+            return;
+
+        if (GameBootstrap.Context != null)
+        {
+            GameBootstrap.Context.Signals.GameStateChanged -= OnGameStateChanged;
+        }
+
+        _subscribedToState = false;
+    }
+
+    private void OnGameStateChanged(GameState state)
+    {
+        Debug.Log("Plunger heard state: " + state);
+
+        if (state == GameState.WaitingForBall)
+        {
+            TryLoadNextBallIfNeeded();
+        }
     }
 
     private void UpdateCharge()
@@ -157,7 +200,10 @@ public class PlungerLauncher : MonoBehaviour
             return;
 
         if (!GameBootstrap.Context.Loop.TryConsumeReserveForNextBall())
+        {
+            Debug.Log("Plunger tried to load ball, but reserve/state did not allow it.");
             return;
+        }
 
         BallRuntimeData runtimeData = ballFactory.CreateBall(loadedBallAnchor.position);
         BallView ballView = runtimeData.BallObject.GetComponent<BallView>();
@@ -173,6 +219,8 @@ public class PlungerLauncher : MonoBehaviour
         GameBootstrap.Context.BallLifecycle.RegisterSpawn(runtimeData);
         GameBootstrap.Context.BallLifecycle.SetLoadedBall(runtimeData);
         GameBootstrap.Context.Loop.OnBallLoaded();
+
+        Debug.Log("Loaded new ball.");
     }
 
     private void KeepLoadedBallSnapped()

@@ -32,7 +32,14 @@ public class GameBootstrap : MonoBehaviour
         StatService stats = new StatService(upgrades, modifiers, upgradeDefinitions);
         BallReserveService ballReserve = new BallReserveService(session, signals);
         BallLifecycleService ballLifecycle = new BallLifecycleService(session, signals);
-        GameLoopController loop = new GameLoopController(stateMachine, ballReserve, ballLifecycle);
+        RoundService rounds = new RoundService(signals, ballReserve);
+
+        GameLoopController loop = new GameLoopController(
+            stateMachine,
+            ballReserve,
+            ballLifecycle,
+            rounds
+        );
 
         Context = new GameContext(
             signals,
@@ -44,6 +51,7 @@ public class GameBootstrap : MonoBehaviour
             stats,
             ballReserve,
             ballLifecycle,
+            rounds,
             loop
         );
     }

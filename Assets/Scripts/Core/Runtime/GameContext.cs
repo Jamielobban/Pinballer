@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 public class GameContext
 {
     public GameSignals Signals { get; private set; }
@@ -11,6 +9,7 @@ public class GameContext
     public StatService Stats { get; private set; }
     public BallReserveService BallReserve { get; private set; }
     public BallLifecycleService BallLifecycle { get; private set; }
+    public RoundService Rounds { get; private set; }
     public GameLoopController Loop { get; private set; }
 
     public GameContext(
@@ -23,6 +22,7 @@ public class GameContext
         StatService stats,
         BallReserveService ballReserve,
         BallLifecycleService ballLifecycle,
+        RoundService rounds,
         GameLoopController loop)
     {
         Signals = signals;
@@ -34,6 +34,7 @@ public class GameContext
         Stats = stats;
         BallReserve = ballReserve;
         BallLifecycle = ballLifecycle;
+        Rounds = rounds;
         Loop = loop;
     }
 }
