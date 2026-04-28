@@ -35,10 +35,7 @@ public class StartRoundButton : MonoBehaviour
             return;
 
         if (GameBootstrap.Context == null)
-        {
-            Debug.LogError("StartRoundButton could not subscribe because GameBootstrap.Context is null.");
             return;
-        }
 
         GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
         _subscribed = true;
@@ -55,18 +52,10 @@ public class StartRoundButton : MonoBehaviour
 
     private void StartRound()
     {
-        if (GameBootstrap.Context == null)
-            return;
-
-        Debug.Log($"Button clicked. Current state: {GameBootstrap.Context.StateMachine.CurrentState}");
-
-        if (!GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild))
+        if (!CanStartRound())
             return;
 
         GameBootstrap.Context.Loop.StartRound();
-
-        Debug.Log($"After StartRound. Round: {GameBootstrap.Context.Rounds.CurrentRound}, State: {GameBootstrap.Context.StateMachine.CurrentState}");
-
         Refresh();
     }
 
@@ -77,9 +66,18 @@ public class StartRoundButton : MonoBehaviour
 
     private void Refresh()
     {
-        if (button == null || GameBootstrap.Context == null)
+        if (button == null)
             return;
 
-        button.interactable = GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild);
+        button.interactable = CanStartRound();
+    }
+
+    private bool CanStartRound()
+    {
+        if (GameBootstrap.Context == null)
+            return false;
+
+        return GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild)
+            || GameBootstrap.Context.StateMachine.IsInState(GameState.BoardEdit);
     }
 }

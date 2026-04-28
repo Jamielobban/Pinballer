@@ -10,5 +10,6 @@ public enum StatType
     BumperForce,
     FlipperPower,
     BallSaveDuration,
-    MaxBallReserve
+    MaxBallReserve,
+    BallsPerRound
 }

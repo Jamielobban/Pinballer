@@ -2,26 +2,31 @@ public class RoundService
 {
     private readonly GameSignals _signals;
     private readonly BallReserveService _ballReserve;
+    private readonly StatService _stats;
+    private readonly BallInventoryService _ballInventory;
 
     public int CurrentRound { get; private set; } = 0;
-    public int BallsPerRound { get; private set; } = 3;
 
-    public RoundService(GameSignals signals, BallReserveService ballReserve)
+    public RoundService(
+        GameSignals signals,
+        BallReserveService ballReserve,
+        StatService stats,
+        BallInventoryService ballInventory)
     {
         _signals = signals;
         _ballReserve = ballReserve;
-    }
-
-    public void SetBallsPerRound(int amount)
-    {
-        BallsPerRound = amount;
+        _stats = stats;
+        _ballInventory = ballInventory;
     }
 
     public void StartNextRound()
     {
         CurrentRound++;
 
-        _ballReserve.SetStartingReserve(BallsPerRound);
+        _ballInventory.ResetQueue();
+
+        int ballsThisRound = _stats.GetBallsPerRound();
+        _ballReserve.SetStartingReserve(ballsThisRound);
 
         _signals.RaiseRoundChanged(CurrentRound);
         _signals.RaiseRoundStarted();

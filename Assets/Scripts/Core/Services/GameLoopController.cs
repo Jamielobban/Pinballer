@@ -84,4 +84,14 @@ public class GameLoopController
         _rounds.EndRound();
         _stateMachine.EnterState(GameState.ShopBuild);
     }
+
+    public void EnterBoardEdit()
+    {
+        _stateMachine.EnterState(GameState.BoardEdit);
+    }
+
+    public void EnterShopBuild()
+    {
+        _stateMachine.EnterState(GameState.ShopBuild);
+    }
 }

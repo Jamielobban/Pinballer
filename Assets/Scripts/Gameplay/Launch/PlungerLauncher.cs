@@ -106,7 +106,7 @@ public class PlungerLauncher : MonoBehaviour
 
     private void OnGameStateChanged(GameState state)
     {
-        Debug.Log("Plunger heard state: " + state);
+        //Debug.Log("Plunger heard state: " + state);
 
         if (state == GameState.WaitingForBall)
         {
@@ -205,7 +205,14 @@ public class PlungerLauncher : MonoBehaviour
             return;
         }
 
-        BallRuntimeData runtimeData = ballFactory.CreateBall(loadedBallAnchor.position);
+        BallDefinition nextBallDefinition =
+        GameBootstrap.Context.BallInventory.GetNextBall(ballFactory.DefaultBallDefinition);
+
+        BallRuntimeData runtimeData = ballFactory.CreateBall(loadedBallAnchor.position, nextBallDefinition);
+
+        if (runtimeData == null)
+            return;
+            
         BallView ballView = runtimeData.BallObject.GetComponent<BallView>();
 
         runtimeData.IsLoaded = true;
@@ -220,7 +227,7 @@ public class PlungerLauncher : MonoBehaviour
         GameBootstrap.Context.BallLifecycle.SetLoadedBall(runtimeData);
         GameBootstrap.Context.Loop.OnBallLoaded();
 
-        Debug.Log("Loaded new ball.");
+       // Debug.Log("Loaded new ball.");
     }
 
     private void KeepLoadedBallSnapped()

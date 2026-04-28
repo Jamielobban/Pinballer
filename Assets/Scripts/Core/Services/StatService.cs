@@ -117,4 +117,11 @@ public class StatService
     {
         return GetIntStat(StatType.MaxBallReserve, 3);
     }
+
+    public int GetBallsPerRound()
+    {
+        return GetIntStat(StatType.BallsPerRound, 3);
+    }
+
+    
 }

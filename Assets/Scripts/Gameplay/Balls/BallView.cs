@@ -1,13 +1,14 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Collider2D))]
 public class BallView : MonoBehaviour
 {
-    [SerializeField] private float minVelocityForInPlay = 0.5f;
+    [SerializeField] private SpriteRenderer spriteRenderer;
 
     private Rigidbody2D _rigidbody2D;
+    private Collider2D _collider2D;
     private BallRuntimeData _runtimeData;
-    private bool _hasEnteredPlayfield;
 
     public Rigidbody2D Rigidbody => _rigidbody2D;
     public BallRuntimeData RuntimeData => _runtimeData;
@@ -15,12 +16,54 @@ public class BallView : MonoBehaviour
     private void Awake()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
+        _collider2D = GetComponent<Collider2D>();
+
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     public void Initialize(BallRuntimeData runtimeData)
     {
         _runtimeData = runtimeData;
-        _hasEnteredPlayfield = false;
+
+        if (_runtimeData != null && _runtimeData.Definition != null)
+            ApplyDefinition(_runtimeData.Definition);
+    }
+
+    private void ApplyDefinition(BallDefinition definition)
+    {
+        if (_rigidbody2D != null)
+        {
+            _rigidbody2D.mass = definition.Mass;
+            _rigidbody2D.gravityScale = definition.GravityScale;
+            _rigidbody2D.linearDamping = definition.LinearDrag;
+            _rigidbody2D.angularDamping = definition.AngularDrag;
+        }
+
+        transform.localScale = Vector3.one * definition.SizeMultiplier;
+
+        if (spriteRenderer != null)
+        {
+            if (definition.Sprite != null)
+                spriteRenderer.sprite = definition.Sprite;
+
+            spriteRenderer.color = definition.Tint;
+        }
+
+        if (_collider2D != null)
+        {
+            if (definition.PhysicsMaterial != null)
+            {
+                _collider2D.sharedMaterial = definition.PhysicsMaterial;
+            }
+            else
+            {
+                PhysicsMaterial2D material = new PhysicsMaterial2D($"{definition.DisplayName}_PhysicsMaterial");
+                material.friction = definition.Friction;
+                material.bounciness = definition.Bounciness;
+                _collider2D.sharedMaterial = material;
+            }
+        }
     }
 
     public void SetKinematicLoadedState(bool isLoaded)
@@ -41,16 +84,5 @@ public class BallView : MonoBehaviour
         _rigidbody2D.bodyType = RigidbodyType2D.Dynamic;
         _rigidbody2D.linearVelocity = Vector2.zero;
         _rigidbody2D.AddForce(force, ForceMode2D.Impulse);
-    }
-
-    private void Update()
-    {
-        if (_runtimeData == null || _rigidbody2D == null)
-            return;
-
-        if (!_hasEnteredPlayfield && _rigidbody2D.linearVelocity.magnitude > minVelocityForInPlay)
-        {
-            _hasEnteredPlayfield = true;
-        }
     }
 }

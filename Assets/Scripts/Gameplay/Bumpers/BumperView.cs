@@ -47,6 +47,9 @@ public class BumperView : MonoBehaviour
         int bumperValue = Mathf.RoundToInt(GameBootstrap.Context.Stats.GetBumperHitValue());
         int finalValue = Mathf.Max(1, baseValue + perHitBonus + bumperValue - 1);
 
+        int ballMultiplier = Mathf.Max(1, ballData.ValueMultiplier);
+        finalValue *= ballMultiplier;
+
         ContactPoint2D contact = collision.GetContact(0);
         Vector2 pushDirection = (ballView.transform.position - transform.position).normalized;
 

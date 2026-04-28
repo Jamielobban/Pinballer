@@ -2,6 +2,7 @@ public enum GameState
 {
     Boot,
     ShopBuild,
+    BoardEdit,
     WaitingForBall,
     BallLoaded,
     BallLaunching,

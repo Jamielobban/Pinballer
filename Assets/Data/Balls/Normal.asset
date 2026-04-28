@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a082457504b56fd46b2fee27c5868c8b, type: 3}
+  m_Name: Normal
+  m_EditorClassIdentifier: Assembly-CSharp::BallDefinition
+  Id: normal_ball
+  DisplayName: normal_ball
+  Prefab: {fileID: 5263402991697533973, guid: f743e6a22a70e6e4bbfe078ad83751ac, type: 3}
+  Mass: 1
+  GravityScale: 1
+  LinearDrag: 0
+  AngularDrag: 0
+  SizeMultiplier: 1
+  Bounciness: 0.9
+  Friction: 0
+  ValueMultiplier: 1
+  BaseCost: 25

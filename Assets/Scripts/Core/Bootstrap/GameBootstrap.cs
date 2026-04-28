@@ -9,6 +9,10 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private int startingMoney = 0;
     [SerializeField] private int startingBallReserve = 3;
 
+    [Header("Balls")]
+    [SerializeField] private BallDefinition defaultBallDefinition;
+    [SerializeField] private List<BallDefinition> startingBalls = new List<BallDefinition>();
+
     [Header("Data")]
     [SerializeField] private List<UpgradeDefinition> upgradeDefinitions = new List<UpgradeDefinition>();
     [SerializeField] private List<ModifierDefinition> startingModifiers = new List<ModifierDefinition>();
@@ -32,7 +36,9 @@ public class GameBootstrap : MonoBehaviour
         StatService stats = new StatService(upgrades, modifiers, upgradeDefinitions);
         BallReserveService ballReserve = new BallReserveService(session, signals);
         BallLifecycleService ballLifecycle = new BallLifecycleService(session, signals);
-        RoundService rounds = new RoundService(signals, ballReserve);
+        InventoryService inventory = new InventoryService(signals);
+        BallInventoryService ballInventory = new BallInventoryService(signals);
+        RoundService rounds = new RoundService(signals, ballReserve, stats, ballInventory);
 
         GameLoopController loop = new GameLoopController(
             stateMachine,
@@ -52,7 +58,9 @@ public class GameBootstrap : MonoBehaviour
             ballReserve,
             ballLifecycle,
             rounds,
-            loop
+            inventory,
+            loop, 
+            ballInventory
         );
     }
 
@@ -67,6 +75,11 @@ public class GameBootstrap : MonoBehaviour
             {
                 Context.Modifiers.AddModifier(startingModifiers[i]);
             }
+        }
+
+        for (int i = 0; i < startingBalls.Count; i++)
+        {
+            Context.BallInventory.AddBall(startingBalls[i]);
         }
     }
 

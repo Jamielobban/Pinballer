@@ -2,36 +2,21 @@ using UnityEngine;
 
 public class ShopPanelView : MonoBehaviour
 {
-    [SerializeField] private GameObject panelRoot;
+    [SerializeField] private UIPanelTween panelTween;
 
     private void Start()
     {
-        if (panelRoot == null)
-            panelRoot = gameObject;
+        if (panelTween == null)
+            panelTween = GetComponent<UIPanelTween>();
 
-        Subscribe();
+        GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
         Refresh();
     }
 
     private void OnDestroy()
     {
-        Unsubscribe();
-    }
-
-    private void Subscribe()
-    {
-        if (GameBootstrap.Context == null)
-            return;
-
-        GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
-    }
-
-    private void Unsubscribe()
-    {
-        if (GameBootstrap.Context == null)
-            return;
-
-        GameBootstrap.Context.Signals.GameStateChanged -= OnGameStateChanged;
+        if (GameBootstrap.Context != null)
+            GameBootstrap.Context.Signals.GameStateChanged -= OnGameStateChanged;
     }
 
     private void OnGameStateChanged(GameState state)
@@ -41,9 +26,11 @@ public class ShopPanelView : MonoBehaviour
 
     private void Refresh()
     {
-        if (panelRoot == null || GameBootstrap.Context == null)
-            return;
+        bool show = GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild);
 
-        panelRoot.SetActive(GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild));
+        if (show)
+            panelTween.Show();
+        else
+            panelTween.Hide();
     }
 }
