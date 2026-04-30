@@ -17,3 +17,6 @@ MonoBehaviour:
   PartType: 0
   BaseCost: 1
   Prefab: {fileID: 7618574862906034622, guid: 7b82fe921ad0d024ea82d535fdc92870, type: 3}
+  BaseValue: 1
+  Force: 10
+  DefaultModifiers: []

@@ -59,4 +59,15 @@ public class InventoryService
             _signals.RaiseInventoryItemSelected(SelectedItem);
         }
     }
+    public void AddPart(PlaceablePartDefinition partDefinition, List<ModifierDefinition> modifiers)
+    {
+        if (partDefinition == null)
+            return;
+
+        InventoryItem item = new InventoryItem(_nextInstanceId, partDefinition, modifiers);
+        _nextInstanceId++;
+
+        _items.Add(item);
+        _signals.RaiseInventoryChanged();
+    }
 }

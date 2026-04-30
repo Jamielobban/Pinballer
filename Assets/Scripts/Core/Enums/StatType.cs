@@ -5,11 +5,7 @@ public enum StatType
     TargetHitValue,
     BallSize,
     LaunchPower,
-    AutoLoadSpeed,
-    MultiballCount,
     BumperForce,
     FlipperPower,
-    BallSaveDuration,
-    MaxBallReserve,
     BallsPerRound
 }

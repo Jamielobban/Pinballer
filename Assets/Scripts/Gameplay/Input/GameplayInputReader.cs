@@ -10,6 +10,7 @@ public class GameplayInputReader : MonoBehaviour
     public event Action RightFlipperPressed;
     public event Action RightFlipperReleased;
 
+    public event Action<float> MouseScrolled;
     private PinballInputActions _inputActions;
 
     private void Awake()
@@ -29,6 +30,8 @@ public class GameplayInputReader : MonoBehaviour
 
         _inputActions.Gameplay.RightFlipper.started += OnRightFlipperStarted;
         _inputActions.Gameplay.RightFlipper.canceled += OnRightFlipperCanceled;
+
+        _inputActions.Gameplay.Scroll.performed += OnMouseScrolled; 
     }
 
     private void OnDisable()
@@ -41,6 +44,8 @@ public class GameplayInputReader : MonoBehaviour
 
         _inputActions.Gameplay.RightFlipper.started -= OnRightFlipperStarted;
         _inputActions.Gameplay.RightFlipper.canceled -= OnRightFlipperCanceled;
+
+        _inputActions.Gameplay.Scroll.performed -= OnMouseScrolled;
 
         _inputActions.Gameplay.Disable();
     }
@@ -78,5 +83,10 @@ public class GameplayInputReader : MonoBehaviour
     private void OnRightFlipperCanceled(UnityEngine.InputSystem.InputAction.CallbackContext context)
     {
         RightFlipperReleased?.Invoke();
+    }
+    private void OnMouseScrolled(UnityEngine.InputSystem.InputAction.CallbackContext context)
+    {
+        float scrollY = context.ReadValue<Vector2>().y;
+        MouseScrolled?.Invoke(scrollY);
     }
 }

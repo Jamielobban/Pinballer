@@ -118,6 +118,15 @@ public partial class @PinballInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Scroll"",
+                    ""type"": ""Value"",
+                    ""id"": ""41330221-c2c3-4c24-ad3b-8bc1d480ab0b"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -153,6 +162,17 @@ public partial class @PinballInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""RightFlipper"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5a9be722-040d-42ce-947a-fb409265872f"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Scroll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -164,6 +184,7 @@ public partial class @PinballInputActions: IInputActionCollection2, IDisposable
         m_Gameplay_Launch = m_Gameplay.FindAction("Launch", throwIfNotFound: true);
         m_Gameplay_LeftFlipper = m_Gameplay.FindAction("LeftFlipper", throwIfNotFound: true);
         m_Gameplay_RightFlipper = m_Gameplay.FindAction("RightFlipper", throwIfNotFound: true);
+        m_Gameplay_Scroll = m_Gameplay.FindAction("Scroll", throwIfNotFound: true);
     }
 
     ~@PinballInputActions()
@@ -247,6 +268,7 @@ public partial class @PinballInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Launch;
     private readonly InputAction m_Gameplay_LeftFlipper;
     private readonly InputAction m_Gameplay_RightFlipper;
+    private readonly InputAction m_Gameplay_Scroll;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
     /// </summary>
@@ -270,6 +292,10 @@ public partial class @PinballInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay/RightFlipper".
         /// </summary>
         public InputAction @RightFlipper => m_Wrapper.m_Gameplay_RightFlipper;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/Scroll".
+        /// </summary>
+        public InputAction @Scroll => m_Wrapper.m_Gameplay_Scroll;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -305,6 +331,9 @@ public partial class @PinballInputActions: IInputActionCollection2, IDisposable
             @RightFlipper.started += instance.OnRightFlipper;
             @RightFlipper.performed += instance.OnRightFlipper;
             @RightFlipper.canceled += instance.OnRightFlipper;
+            @Scroll.started += instance.OnScroll;
+            @Scroll.performed += instance.OnScroll;
+            @Scroll.canceled += instance.OnScroll;
         }
 
         /// <summary>
@@ -325,6 +354,9 @@ public partial class @PinballInputActions: IInputActionCollection2, IDisposable
             @RightFlipper.started -= instance.OnRightFlipper;
             @RightFlipper.performed -= instance.OnRightFlipper;
             @RightFlipper.canceled -= instance.OnRightFlipper;
+            @Scroll.started -= instance.OnScroll;
+            @Scroll.performed -= instance.OnScroll;
+            @Scroll.canceled -= instance.OnScroll;
         }
 
         /// <summary>
@@ -386,5 +418,12 @@ public partial class @PinballInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnRightFlipper(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Scroll" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnScroll(InputAction.CallbackContext context);
     }
 }

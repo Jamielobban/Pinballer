@@ -11,6 +11,9 @@ public class PlacementNode : MonoBehaviour
 
     private GameObject _placedObject;
 
+    public PlaceableRuntimeData RuntimeData { get; private set; }
+    public GameObject PlacedObject => _placedObject;
+
     private void Awake()
     {
         RefreshVisual(false);
@@ -21,14 +24,32 @@ public class PlacementNode : MonoBehaviour
         return !IsOccupied;
     }
 
-    public void Place(GameObject prefab)
+    public void Place(InventoryItem item)
     {
-        if (prefab == null || IsOccupied)
+        if (item == null || item.PartDefinition == null || item.PartDefinition.Prefab == null || IsOccupied)
             return;
 
-        _placedObject = Instantiate(prefab, transform.position, Quaternion.identity);
-        IsOccupied = true;
+        PlaceableRuntimeData runtime = new PlaceableRuntimeData
+        {
+            Definition = item.PartDefinition
+        };
 
+        if (item.PartDefinition.DefaultModifiers != null)
+            runtime.Modifiers.AddRange(item.PartDefinition.DefaultModifiers);
+
+        if (item.Modifiers != null)
+            runtime.Modifiers.AddRange(item.Modifiers);
+
+        _placedObject = Instantiate(item.PartDefinition.Prefab, transform.position, Quaternion.identity);
+        runtime.Instance = _placedObject;
+
+        RuntimeData = runtime;
+
+        IPlaceableView view = _placedObject.GetComponent<IPlaceableView>();
+        if (view != null)
+            view.Initialize(runtime);
+
+        IsOccupied = true;
         RefreshVisual(false);
     }
 

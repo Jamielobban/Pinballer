@@ -9,6 +9,7 @@ public class BallLifecycleService
     public BallRuntimeData LoadedBall { get; private set; }
     public IReadOnlyList<BallRuntimeData> ActiveBalls => _activeBalls;
 
+    public BallRuntimeData CurrentFollowBall { get; private set; }
     public BallLifecycleService(GameSession session, GameSignals signals)
     {
         _session = session;
@@ -44,6 +45,7 @@ public class BallLifecycleService
         LoadedBall.IsInPlay = true;
 
         _activeBalls.Add(LoadedBall);
+        CurrentFollowBall = LoadedBall;
         _session.IncrementActiveBalls();
 
         _signals.RaiseBallLaunched(LoadedBall);
@@ -64,6 +66,10 @@ public class BallLifecycleService
         ball.IsInPlay = false;
 
         _signals.RaiseBallDrained(ball);
+        if (CurrentFollowBall == ball)
+        {
+            CurrentFollowBall = _activeBalls.Count > 0 ? _activeBalls[_activeBalls.Count - 1] : null;
+        }
     }
 
     public int GetActiveBallCount()

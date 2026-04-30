@@ -20,4 +20,31 @@ public class PlaceablePartDefinition : ScriptableObject
 
     [Header("Prefab")]
     public GameObject Prefab;
+
+    [Header("Base Stats")]
+    public int BaseValue = 1;
+    public float Force = 10f;
+
+    [Header("Default Modifiers")]
+    public ModifierDefinition[] DefaultModifiers;
+
+    [Header("Allowed Modifiers")]
+    public ModifierType[] AllowedModifierTypes;
+
+    public bool CanUseModifier(ModifierDefinition modifier)
+    {
+        if (modifier == null)
+            return false;
+
+        if (AllowedModifierTypes == null || AllowedModifierTypes.Length == 0)
+            return true;
+
+        for (int i = 0; i < AllowedModifierTypes.Length; i++)
+        {
+            if (AllowedModifierTypes[i] == modifier.Type)
+                return true;
+        }
+
+        return false;
+    }
 }

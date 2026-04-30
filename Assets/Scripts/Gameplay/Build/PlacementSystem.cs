@@ -127,8 +127,7 @@ public class PlacementSystem : MonoBehaviour
 
         Debug.Log("Placing: " + selectedItem.PartDefinition.DisplayName);
 
-        node.Place(selectedItem.PartDefinition.Prefab);
-
+        node.Place(selectedItem);
         GameBootstrap.Context.Inventory.RemoveItem(selectedItem);
 
         CancelPlacementMode();

@@ -15,6 +15,9 @@ MonoBehaviour:
   Id: heavy
   DisplayName: heavy
   Prefab: {fileID: 5263402991697533973, guid: f743e6a22a70e6e4bbfe078ad83751ac, type: 3}
+  Sprite: {fileID: 0}
+  Tint: {r: 1, g: 0, b: 0, a: 1}
+  PhysicsMaterial: {fileID: 0}
   Mass: 2
   GravityScale: 1.5
   LinearDrag: 0
