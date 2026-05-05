@@ -73,7 +73,14 @@ public class BumperView : MonoBehaviour, IPlaceableView
         float finalForce = CalculateFinalForce();
 
         ApplyBounce(ballView, contact, finalForce);
-        ApplyModifierEffects(ballData, contact.point);
+
+        PlaceableHitResolver.ResolveBasicHit(
+            _runtime,
+            ballData,
+            contact.point,
+            1,
+            true
+        );
 
         int payout = 0;
 
@@ -84,14 +91,22 @@ public class BumperView : MonoBehaviour, IPlaceableView
             if (shouldPayout)
             {
                 payout = CalculateFinalPayout(ballData);
+
+                // Charged payout gives money.
                 GameBootstrap.Context.Economy.AddMoney(payout);
+
+                // Charged payout also gives score, affected by combo multiplier.
+                GameBootstrap.Context.Score.AddScore(payout);
+
                 _runtime.ResetCharge();
             }
         }
         else
         {
             payout = fallbackPayoutValue;
+
             GameBootstrap.Context.Economy.AddMoney(payout);
+            GameBootstrap.Context.Score.AddScore(payout);
         }
 
         RaiseHitSignal(ballData, contact.point, payout);
@@ -114,7 +129,6 @@ public class BumperView : MonoBehaviour, IPlaceableView
 
         int ballMultiplier = Mathf.Max(1, ballData.ValueMultiplier);
         value *= ballMultiplier;
-        GameBootstrap.Context.Score.AddScore(value);
         return Mathf.Max(1, value);
     }
 
@@ -145,22 +159,6 @@ public class BumperView : MonoBehaviour, IPlaceableView
         );
     }
 
-    private void ApplyModifierEffects(BallRuntimeData ballData, Vector2 hitPoint)
-    {
-        if (_runtime == null)
-            return;
-
-        if (_runtime.HasModifier(ModifierType.Explode))
-        {
-            Debug.Log("Explode modifier triggered at " + hitPoint);
-        }
-
-        if (_runtime.HasModifier(ModifierType.Chain))
-        {
-            Debug.Log("Chain modifier triggered at " + hitPoint);
-        }
-    }
-
     private void RaiseHitSignal(BallRuntimeData ballData, Vector2 hitPoint, int finalValue)
     {
         HitEventData hitData = new HitEventData
@@ -176,7 +174,6 @@ public class BumperView : MonoBehaviour, IPlaceableView
         };
 
         GameBootstrap.Context.Signals.RaiseHitScored(hitData);
-        GameBootstrap.Context.Score.AddScore(1);
     }
 
     private void RefreshDebug()

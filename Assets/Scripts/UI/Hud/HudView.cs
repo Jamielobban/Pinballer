@@ -27,6 +27,7 @@ public class HudView : MonoBehaviour
         GameBootstrap.Context.Signals.MoneyChanged += OnMoneyChanged;
         GameBootstrap.Context.Signals.ScoreChanged += OnScoreChanged;
         GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
+        GameBootstrap.Context.Signals.ComboChanged += OnComboChanged;
     }
 
     private void Unsubscribe()
@@ -37,6 +38,7 @@ public class HudView : MonoBehaviour
         GameBootstrap.Context.Signals.MoneyChanged -= OnMoneyChanged;
         GameBootstrap.Context.Signals.ScoreChanged -= OnScoreChanged;
         GameBootstrap.Context.Signals.GameStateChanged -= OnGameStateChanged;
+        GameBootstrap.Context.Signals.ComboChanged -= OnComboChanged;
     }
 
     private void OnMoneyChanged(int money)
@@ -50,6 +52,10 @@ public class HudView : MonoBehaviour
     }
 
     private void OnGameStateChanged(GameState state)
+    {
+        RefreshAll();
+    }
+    private void OnComboChanged(float multiplier, float timeRemaining, float duration)
     {
         RefreshAll();
     }
@@ -81,9 +87,11 @@ public class HudView : MonoBehaviour
         if (statsText != null)
         {
             statsText.text =
-                $"Score Multiplier: x{GameBootstrap.Context.Stats.GetScoreMultiplier():0.00}\n" +
-                $"Balls/Round: {GameBootstrap.Context.Stats.GetBallsPerRound()}\n" +
-                $"Launch Power: x{GameBootstrap.Context.Stats.GetLaunchPower():0.00}";
+            $"Score Multiplier: x{GameBootstrap.Context.Stats.GetScoreMultiplier():0.00}\n" +
+            $"Combo: x{GameBootstrap.Context.Score.ComboMultiplier:0.00}\n" +
+            $"Combo Timer: {GameBootstrap.Context.Score.ComboTimeRemaining:0.00}s\n" +
+            $"Balls/Round: {GameBootstrap.Context.Stats.GetBallsPerRound()}\n" +
+            $"Launch Power: x{GameBootstrap.Context.Stats.GetLaunchPower():0.00}";
         }
     }
 }

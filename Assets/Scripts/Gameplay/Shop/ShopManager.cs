@@ -15,6 +15,12 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private int extraModifierChancePercent = 20;
     [SerializeField] private int modifierCost = 5;
 
+    [Header("Reroll")]
+    [SerializeField] private int baseRerollCost = 5;
+    [SerializeField] private int rerollCostIncrease = 3;
+
+    private int _rerollsThisShop;
+
     private readonly List<ShopOffer> _currentOffers = new List<ShopOffer>();
     private bool _hasRolledForCurrentShop;
 
@@ -45,6 +51,8 @@ public class ShopManager : MonoBehaviour
             EnterShop();
             return;
         }
+        if (state == GameState.BoardEdit)
+            return;
 
         _hasRolledForCurrentShop = false;
     }
@@ -55,9 +63,14 @@ public class ShopManager : MonoBehaviour
             return;
 
         _hasRolledForCurrentShop = true;
+        _rerollsThisShop = 0;
+
         RollOffers();
     }
-
+    public int GetCurrentRerollCost()
+    {
+        return baseRerollCost + (_rerollsThisShop * rerollCostIncrease);
+    }
     public void RollOffers()
     {
         _currentOffers.Clear();
@@ -325,5 +338,111 @@ public class ShopManager : MonoBehaviour
         }
 
         return result;
+    }
+
+    public void RerollOffer(int index)
+    {
+        if (index < 0 || index >= _currentOffers.Count)
+        {
+            Debug.Log("Invalid reroll index.");
+            return;
+        }
+
+        int cost = GetCurrentRerollCost();
+
+        if (!GameBootstrap.Context.Economy.TrySpend(cost))
+        {
+            Debug.Log("Not enough money to reroll.");
+            return;
+        }
+
+        ShopOffer newOffer = GenerateUniqueOffer(index);
+
+        if (newOffer == null)
+        {
+            Debug.Log("Could not generate unique offer.");
+            return;
+        }
+
+        _currentOffers[index] = newOffer;
+        _rerollsThisShop++;
+
+        Debug.Log("Rerolled offer " + (index + 1) + " for " + cost);
+
+        DebugLogOffers();
+        OffersChanged?.Invoke();
+    }
+
+    private ShopOffer GenerateUniqueOffer(int replacingIndex)
+    {
+        const int maxAttempts = 20;
+
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            ShopOffer candidate = GenerateOffer();
+
+            if (candidate == null)
+                continue;
+
+            if (!DoesOfferDuplicateCurrent(candidate, replacingIndex))
+                return candidate;
+        }
+
+        return GenerateOffer(); // fallback, avoids hard failure
+    }
+
+    private bool DoesOfferDuplicateCurrent(ShopOffer candidate, int ignoringIndex)
+    {
+        for (int i = 0; i < _currentOffers.Count; i++)
+        {
+            if (i == ignoringIndex)
+                continue;
+
+            ShopOffer existing = _currentOffers[i];
+
+            if (AreOffersSame(candidate, existing))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool AreOffersSame(ShopOffer a, ShopOffer b)
+    {
+        if (a == null || b == null)
+            return false;
+
+        if (a.OfferType != b.OfferType)
+            return false;
+
+        if (a.OfferType == ShopOfferType.Upgrade)
+            return a.UpgradeDefinition == b.UpgradeDefinition;
+
+        if (a.PartDefinition != b.PartDefinition)
+            return false;
+
+        return HaveSameModifiers(a, b);
+    }
+
+    private bool HaveSameModifiers(ShopOffer a, ShopOffer b)
+    {
+        int aCount = a.Modifiers != null ? a.Modifiers.Count : 0;
+        int bCount = b.Modifiers != null ? b.Modifiers.Count : 0;
+
+        if (aCount != bCount)
+            return false;
+
+        for (int i = 0; i < aCount; i++)
+        {
+            ModifierDefinition modifier = a.Modifiers[i];
+
+            if (modifier == null)
+                continue;
+
+            if (b.Modifiers == null || !b.Modifiers.Contains(modifier))
+                return false;
+        }
+
+        return true;
     }
 }

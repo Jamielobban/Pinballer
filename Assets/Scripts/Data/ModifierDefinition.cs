@@ -9,7 +9,8 @@ public enum ModifierType
     ExtraBounce,
 
     ReduceHitsRequired,
-    IncreaseHitsRequired
+    IncreaseHitsRequired,
+    ComboOnHit
 }
 
 [CreateAssetMenu(menuName = "Game/Modifiers/Modifier Definition")]

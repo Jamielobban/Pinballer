@@ -8,15 +8,26 @@ public class ShopOfferButtonView : MonoBehaviour
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text label;
 
+    [SerializeField] private Button rerollButton;
+    [SerializeField] private int offerIndex;
+    [SerializeField] private TMP_Text rerollLabel;
+
     private ShopManager _shopManager;
     private int _offerIndex = -1;
 
     private void Awake()
     {
-        if (button == null)
-            button = GetComponent<Button>();
+        if (rerollButton != null)
+            rerollButton.onClick.AddListener(OnRerollClicked);
+    }
 
-        button.onClick.AddListener(BuyOffer);
+    private void OnRerollClicked()
+    {
+        if (_shopManager == null)
+            return;
+
+        _shopManager.RerollOffer(_offerIndex);
+        rerollLabel.text = "Reroll: " + _shopManager.GetCurrentRerollCost();
     }
 
     private void OnDestroy()
