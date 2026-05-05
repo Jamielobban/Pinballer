@@ -3,13 +3,10 @@ using UnityEngine;
 
 public class HudView : MonoBehaviour
 {
-    [Header("Text")]
     [SerializeField] private TMP_Text moneyText;
-    [SerializeField] private TMP_Text ballsText;
-    [SerializeField] private TMP_Text roundText;
+    [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text stateText;
-
-    private bool _subscribed;
+    [SerializeField] private TMP_Text statsText;
 
     private void Start()
     {
@@ -24,34 +21,37 @@ public class HudView : MonoBehaviour
 
     private void Subscribe()
     {
-        if (_subscribed)
-            return;
-
         if (GameBootstrap.Context == null)
-        {
-            Debug.LogError("HudView could not subscribe because GameBootstrap.Context is null.");
             return;
-        }
 
         GameBootstrap.Context.Signals.MoneyChanged += OnMoneyChanged;
-        GameBootstrap.Context.Signals.BallReserveChanged += OnBallReserveChanged;
-        GameBootstrap.Context.Signals.RoundChanged += OnRoundChanged;
+        GameBootstrap.Context.Signals.ScoreChanged += OnScoreChanged;
         GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
-
-        _subscribed = true;
     }
 
     private void Unsubscribe()
     {
-        if (!_subscribed || GameBootstrap.Context == null)
+        if (GameBootstrap.Context == null)
             return;
 
         GameBootstrap.Context.Signals.MoneyChanged -= OnMoneyChanged;
-        GameBootstrap.Context.Signals.BallReserveChanged -= OnBallReserveChanged;
-        GameBootstrap.Context.Signals.RoundChanged -= OnRoundChanged;
+        GameBootstrap.Context.Signals.ScoreChanged -= OnScoreChanged;
         GameBootstrap.Context.Signals.GameStateChanged -= OnGameStateChanged;
+    }
 
-        _subscribed = false;
+    private void OnMoneyChanged(int money)
+    {
+        RefreshAll();
+    }
+
+    private void OnScoreChanged(int totalScore, int roundScore, int targetScore)
+    {
+        RefreshAll();
+    }
+
+    private void OnGameStateChanged(GameState state)
+    {
+        RefreshAll();
     }
 
     private void RefreshAll()
@@ -59,33 +59,31 @@ public class HudView : MonoBehaviour
         if (GameBootstrap.Context == null)
             return;
 
-        OnMoneyChanged(GameBootstrap.Context.Session.Money);
-        OnBallReserveChanged(GameBootstrap.Context.BallReserve.CurrentReserve);
-        OnRoundChanged(GameBootstrap.Context.Rounds.CurrentRound);
-        OnGameStateChanged(GameBootstrap.Context.StateMachine.CurrentState);
-    }
-
-    private void OnMoneyChanged(int money)
-    {
         if (moneyText != null)
-            moneyText.text = $"Money: {money}";
-    }
+        {
+            moneyText.text =
+                $"Money: {GameBootstrap.Context.Economy.CurrentMoney}";
+        }
 
-    private void OnBallReserveChanged(int balls)
-    {
-        if (ballsText != null)
-            ballsText.text = $"Balls: {balls}";
-    }
+        if (scoreText != null)
+        {
+            scoreText.text =
+                $"Round Score: {GameBootstrap.Context.Score.RoundScore} / {GameBootstrap.Context.Score.TargetScore}\n" +
+                $"Total Score: {GameBootstrap.Context.Score.TotalScore}";
+        }
 
-    private void OnRoundChanged(int round)
-    {
-        if (roundText != null)
-            roundText.text = $"Round: {round}";
-    }
-
-    private void OnGameStateChanged(GameState state)
-    {
         if (stateText != null)
-            stateText.text = $"State: {state}";
+        {
+            stateText.text =
+                $"State: {GameBootstrap.Context.StateMachine.CurrentState}";
+        }
+
+        if (statsText != null)
+        {
+            statsText.text =
+                $"Score Multiplier: x{GameBootstrap.Context.Stats.GetScoreMultiplier():0.00}\n" +
+                $"Balls/Round: {GameBootstrap.Context.Stats.GetBallsPerRound()}\n" +
+                $"Launch Power: x{GameBootstrap.Context.Stats.GetLaunchPower():0.00}";
+        }
     }
 }

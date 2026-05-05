@@ -6,9 +6,11 @@ public class ShopManager : MonoBehaviour
     [Header("Offer Pool")]
     [SerializeField] private PlaceablePartDefinition[] availableParts;
     [SerializeField] private ModifierDefinition[] availableModifiers;
+    [SerializeField] private UpgradeDefinition[] availableUpgrades;
 
     [Header("Shop Settings")]
     [SerializeField] private int offerCount = 3;
+    [SerializeField] private int upgradeOfferChancePercent = 30;
     [SerializeField] private int modifierChancePercent = 70;
     [SerializeField] private int extraModifierChancePercent = 20;
     [SerializeField] private int modifierCost = 5;
@@ -60,9 +62,10 @@ public class ShopManager : MonoBehaviour
     {
         _currentOffers.Clear();
 
-        if (availableParts == null || availableParts.Length == 0)
+        if (!HasAnyOfferPool())
         {
-            Debug.LogWarning("ShopManager has no available parts.");
+            Debug.LogWarning("ShopManager has no available parts or upgrades.");
+            OffersChanged?.Invoke();
             return;
         }
 
@@ -78,7 +81,33 @@ public class ShopManager : MonoBehaviour
         OffersChanged?.Invoke();
     }
 
+    private bool HasAnyOfferPool()
+    {
+        bool hasParts = availableParts != null && availableParts.Length > 0;
+        bool hasUpgrades = availableUpgrades != null && availableUpgrades.Length > 0;
+
+        return hasParts || hasUpgrades;
+    }
+
     private ShopOffer GenerateOffer()
+    {
+        bool canRollUpgrade = availableUpgrades != null && availableUpgrades.Length > 0;
+        bool canRollPart = availableParts != null && availableParts.Length > 0;
+
+        if (!canRollUpgrade && !canRollPart)
+            return null;
+
+        bool rollUpgrade =
+            canRollUpgrade &&
+            Random.Range(0, 100) < upgradeOfferChancePercent;
+
+        if (rollUpgrade || !canRollPart)
+            return GenerateUpgradeOffer();
+
+        return GeneratePlaceableOffer();
+    }
+
+    private ShopOffer GeneratePlaceableOffer()
     {
         PlaceablePartDefinition part = GetRandomPart();
 
@@ -87,6 +116,7 @@ public class ShopManager : MonoBehaviour
 
         ShopOffer offer = new ShopOffer
         {
+            OfferType = ShopOfferType.Placeable,
             PartDefinition = part,
             Cost = part.BaseCost
         };
@@ -97,12 +127,37 @@ public class ShopManager : MonoBehaviour
         return offer;
     }
 
+    private ShopOffer GenerateUpgradeOffer()
+    {
+        UpgradeDefinition upgrade = GetRandomUpgrade();
+
+        if (upgrade == null)
+            return null;
+
+        int cost = GameBootstrap.Context.Upgrades.GetCost(upgrade);
+
+        return new ShopOffer
+        {
+            OfferType = ShopOfferType.Upgrade,
+            UpgradeDefinition = upgrade,
+            Cost = cost
+        };
+    }
+
     private PlaceablePartDefinition GetRandomPart()
     {
         if (availableParts == null || availableParts.Length == 0)
             return null;
 
         return availableParts[Random.Range(0, availableParts.Length)];
+    }
+
+    private UpgradeDefinition GetRandomUpgrade()
+    {
+        if (availableUpgrades == null || availableUpgrades.Length == 0)
+            return null;
+
+        return availableUpgrades[Random.Range(0, availableUpgrades.Length)];
     }
 
     private void TryAddRandomModifier(ShopOffer offer, int chancePercent)
@@ -116,7 +171,10 @@ public class ShopManager : MonoBehaviour
         if (Random.Range(0, 100) >= chancePercent)
             return;
 
-        ModifierDefinition modifier = GetRandomValidModifier(offer.PartDefinition, offer.Modifiers);
+        ModifierDefinition modifier = GetRandomValidModifier(
+            offer.PartDefinition,
+            offer.Modifiers
+        );
 
         if (modifier == null)
             return;
@@ -163,13 +221,36 @@ public class ShopManager : MonoBehaviour
 
         ShopOffer offer = _currentOffers[index];
 
-        if (offer == null || offer.PartDefinition == null)
+        if (offer == null)
             return;
+
+        bool bought = false;
+
+        if (offer.OfferType == ShopOfferType.Placeable)
+            bought = BuyPlaceableOffer(offer);
+
+        if (offer.OfferType == ShopOfferType.Upgrade)
+            bought = BuyUpgradeOffer(offer);
+
+        if (!bought)
+            return;
+
+        _currentOffers.RemoveAt(index);
+        OffersChanged?.Invoke();
+
+        Debug.Log("Bought: " + offer.GetDisplayName());
+        DebugLogOffers();
+    }
+
+    private bool BuyPlaceableOffer(ShopOffer offer)
+    {
+        if (offer == null || offer.PartDefinition == null)
+            return false;
 
         if (!GameBootstrap.Context.Economy.TrySpend(offer.Cost))
         {
             Debug.Log("Not enough money.");
-            return;
+            return false;
         }
 
         GameBootstrap.Context.Inventory.AddPart(
@@ -177,10 +258,23 @@ public class ShopManager : MonoBehaviour
             offer.Modifiers
         );
 
-        _currentOffers.RemoveAt(index);
-        OffersChanged?.Invoke();
-        Debug.Log("Bought: " + offer.GetDisplayName());
-        DebugLogOffers();
+        return true;
+    }
+
+    private bool BuyUpgradeOffer(ShopOffer offer)
+    {
+        if (offer == null || offer.UpgradeDefinition == null)
+            return false;
+
+        bool bought = GameBootstrap.Context.Upgrades.TryPurchase(offer.UpgradeDefinition);
+
+        if (bought)
+        {
+            Debug.Log("Bought upgrade: " + offer.UpgradeDefinition.DisplayName);
+            Debug.Log("Score Multiplier now: " + GameBootstrap.Context.Stats.GetScoreMultiplier());
+        }
+
+        return bought;
     }
 
     private void DebugLogOffers()
@@ -198,8 +292,9 @@ public class ShopManager : MonoBehaviour
             ShopOffer offer = _currentOffers[i];
 
             Debug.Log(
-                i + 1 + ": " +
+                (i + 1) + ": " +
                 offer.GetDisplayName() +
+                " | Type: " + offer.OfferType +
                 " | Cost: " + offer.Cost +
                 " | Mods: " + GetModifierNames(offer)
             );
@@ -208,7 +303,10 @@ public class ShopManager : MonoBehaviour
 
     private string GetModifierNames(ShopOffer offer)
     {
-        if (offer == null || offer.Modifiers == null || offer.Modifiers.Count == 0)
+        if (offer == null || offer.OfferType != ShopOfferType.Placeable)
+            return "None";
+
+        if (offer.Modifiers == null || offer.Modifiers.Count == 0)
             return "None";
 
         string result = "";

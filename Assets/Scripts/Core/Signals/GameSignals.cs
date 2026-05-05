@@ -21,6 +21,7 @@ public sealed class GameSignals
     public event Action InventoryChanged;
     public event Action<InventoryItem> InventoryItemSelected;
     public event Action BallQueueChanged;
+    public event System.Action<int, int, int> ScoreChanged;
     public void RaiseGameStateChanged(GameState state) => GameStateChanged?.Invoke(state);
     public void RaiseMoneyChanged(int amount) => MoneyChanged?.Invoke(amount);
     public void RaiseBallReserveChanged(int reserve) => BallReserveChanged?.Invoke(reserve);
@@ -39,4 +40,5 @@ public sealed class GameSignals
     public void RaiseInventoryChanged() => InventoryChanged?.Invoke();
     public void RaiseInventoryItemSelected(InventoryItem item) => InventoryItemSelected?.Invoke(item);
     public void RaiseBallQueueChanged() => BallQueueChanged?.Invoke();
+    public void RaiseScoreChanged(int totalScore, int roundScore, int targetScore) => ScoreChanged?.Invoke(totalScore, roundScore, targetScore);
 }

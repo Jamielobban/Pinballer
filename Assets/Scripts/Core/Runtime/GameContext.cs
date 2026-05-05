@@ -13,6 +13,7 @@ public class GameContext
     public InventoryService Inventory { get; private set; }
     public GameLoopController Loop { get; private set; }
     public BallInventoryService BallInventory { get; private set; }
+    public ScoreService Score { get; }
 
     public GameContext(
         GameSignals signals,
@@ -27,7 +28,7 @@ public class GameContext
         RoundService rounds,
         InventoryService inventory,
         GameLoopController loop,
-        BallInventoryService ballInventory)
+        BallInventoryService ballInventory, ScoreService score)
     {
         Signals = signals;
         Session = session;
@@ -42,5 +43,6 @@ public class GameContext
         Inventory = inventory;
         Loop = loop;
         BallInventory = ballInventory;
+        Score = score;
     }
 }

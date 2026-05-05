@@ -31,6 +31,10 @@ public class PlaceablePartDefinition : ScriptableObject
     [Header("Allowed Modifiers")]
     public ModifierType[] AllowedModifierTypes;
 
+    [Header("Charge / Payout")]
+    public int HitsRequired = 3;
+    public int PayoutValue = 10;
+
     public bool CanUseModifier(ModifierDefinition modifier)
     {
         if (modifier == null)

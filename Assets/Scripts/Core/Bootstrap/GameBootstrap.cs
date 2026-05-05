@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class GameBootstrap : MonoBehaviour
 {
@@ -39,13 +40,13 @@ public class GameBootstrap : MonoBehaviour
         InventoryService inventory = new InventoryService(signals);
         BallInventoryService ballInventory = new BallInventoryService(signals);
         RoundService rounds = new RoundService(signals, ballReserve, stats, ballInventory);
-
         GameLoopController loop = new GameLoopController(
             stateMachine,
             ballReserve,
             ballLifecycle,
             rounds
         );
+        ScoreService score = new ScoreService(session,signals);
 
         Context = new GameContext(
             signals,
@@ -60,7 +61,8 @@ public class GameBootstrap : MonoBehaviour
             rounds,
             inventory,
             loop, 
-            ballInventory
+            ballInventory,
+            score
         );
     }
 

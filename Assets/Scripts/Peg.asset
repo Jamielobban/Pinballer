@@ -12,8 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2afeb37b2e9d62543a9169a7ccec4b06, type: 3}
   m_Name: Peg
   m_EditorClassIdentifier: Assembly-CSharp::PlaceablePartDefinition
-  Id: 
-  DisplayName: 
+  Id: Peg
+  DisplayName: Peg
   PartType: 1
   BaseCost: 1
   Prefab: {fileID: 8941574564184570116, guid: cc7c24ed5229dac4996a7fb56ae5a6b4, type: 3}
+  BaseValue: 1
+  Force: 10
+  DefaultModifiers: []
+  AllowedModifierTypes: 

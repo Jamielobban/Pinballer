@@ -25,6 +25,8 @@ public class GameLoopController
     public void StartRound()
     {
         _rounds.StartNextRound();
+        //int targetScore = _rounds.GetCurrentTargetScore();
+        GameBootstrap.Context.Score.StartRound(100);
         _stateMachine.EnterState(GameState.WaitingForBall);
     }
 
@@ -82,6 +84,13 @@ public class GameLoopController
     private void EndRoundAndEnterShop()
     {
         _rounds.EndRound();
+
+        if (!GameBootstrap.Context.Score.HasMetTarget())
+        {
+            _stateMachine.EnterState(GameState.GameOver);
+            return;
+        }
+
         _stateMachine.EnterState(GameState.ShopBuild);
     }
 

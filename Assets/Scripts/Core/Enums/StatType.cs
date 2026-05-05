@@ -7,5 +7,6 @@ public enum StatType
     LaunchPower,
     BumperForce,
     FlipperPower,
-    BallsPerRound
+    BallsPerRound,
+    ScoreMultiplier
 }

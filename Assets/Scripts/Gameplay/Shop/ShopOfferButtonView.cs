@@ -47,7 +47,7 @@ public class ShopOfferButtonView : MonoBehaviour
 
         ShopOffer offer = _shopManager.CurrentOffers[_offerIndex];
 
-        if (offer == null || offer.PartDefinition == null)
+        if (offer == null)
         {
             label.text = "Missing Offer";
             button.interactable = false;
@@ -58,6 +58,7 @@ public class ShopOfferButtonView : MonoBehaviour
 
         label.text =
             $"{offer.GetDisplayName()}\n" +
+            $"Type: {offer.OfferType}\n" +
             $"Cost: {offer.Cost}\n" +
             $"Mods: {GetModifierText(offer)}";
 
@@ -74,6 +75,9 @@ public class ShopOfferButtonView : MonoBehaviour
 
     private string GetModifierText(ShopOffer offer)
     {
+        if (offer == null || offer.OfferType != ShopOfferType.Placeable)
+            return "-";
+
         if (offer.Modifiers == null || offer.Modifiers.Count == 0)
             return "None";
 

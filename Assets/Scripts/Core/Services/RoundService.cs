@@ -5,7 +5,7 @@ public class RoundService
     private readonly StatService _stats;
     private readonly BallInventoryService _ballInventory;
 
-    public int CurrentRound { get; private set; } = 0;
+    public int CurrentRound { get; private set; }
 
     public RoundService(
         GameSignals signals,
@@ -35,5 +35,10 @@ public class RoundService
     public void EndRound()
     {
         _signals.RaiseRoundEnded();
+    }
+
+    public int GetCurrentTargetScore()
+    {
+        return 100 + ((CurrentRound - 1) * 75);
     }
 }

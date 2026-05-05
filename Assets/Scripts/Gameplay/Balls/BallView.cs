@@ -85,4 +85,14 @@ public class BallView : MonoBehaviour
         _rigidbody2D.linearVelocity = Vector2.zero;
         _rigidbody2D.AddForce(force, ForceMode2D.Impulse);
     }
+
+    public void LaunchWithVelocity(Vector2 velocity)
+    {
+        if (_rigidbody2D == null)
+            return;
+
+        _rigidbody2D.bodyType = RigidbodyType2D.Dynamic;
+        _rigidbody2D.linearVelocity = velocity;
+        _rigidbody2D.angularVelocity = 0f;
+    }
 }

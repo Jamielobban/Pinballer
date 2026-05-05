@@ -5,6 +5,11 @@ public class GameSession
     public int ActiveBallCount { get; private set; }
     public GameState CurrentState { get; private set; }
 
+    public int TotalScore { get; private set; }
+    public int RoundScore { get; private set; }
+    public int TargetScore { get; private set; }
+
+
     public void SetMoney(int value)
     {
         Money = value;
@@ -65,5 +70,21 @@ public class GameSession
     public void SetState(GameState state)
     {
         CurrentState = state;
+    }
+
+    public void AddScore(int amount)
+    {
+        TotalScore += amount;
+        RoundScore += amount;
+    }
+
+    public void ResetRoundScore()
+    {
+        RoundScore = 0;
+    }
+
+    public void SetTargetScore(int amount)
+    {
+        TargetScore = amount;
     }
 }

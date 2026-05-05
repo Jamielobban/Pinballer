@@ -7,7 +7,8 @@ public class BumperView : MonoBehaviour, IPlaceableView
     [SerializeField] private string sourceId = "bumper";
 
     [Header("Fallback Tuning")]
-    [SerializeField] private int fallbackBaseValue = 2;
+    [SerializeField] private int fallbackPayoutValue = 2;
+    [SerializeField] private int fallbackHitsRequired = 3;
     [SerializeField] private float fallbackBounceForce = 10f;
 
     [Header("Feedback")]
@@ -15,10 +16,17 @@ public class BumperView : MonoBehaviour, IPlaceableView
     [SerializeField] private float hitScaleMultiplier = 1.15f;
     [SerializeField] private float scaleReturnSpeed = 10f;
 
-    private Vector3 _baseScale;
+    [Header("Runtime Debug")]
     [SerializeField] private PlaceableRuntimeData _runtime;
+    [SerializeField] private int debugCurrentHits;
+    [SerializeField] private int debugHitsRequired;
+    [SerializeField] private int debugPayoutValue;
+    [SerializeField] private float debugChargePercent;
+
+    private Vector3 _baseScale;
 
     public PlaceableRuntimeData RuntimeData => _runtime;
+
     private void Awake()
     {
         if (visual == null)
@@ -30,6 +38,7 @@ public class BumperView : MonoBehaviour, IPlaceableView
     public void Initialize(PlaceableRuntimeData runtime)
     {
         _runtime = runtime;
+        RefreshDebug();
     }
 
     private void Update()
@@ -42,6 +51,8 @@ public class BumperView : MonoBehaviour, IPlaceableView
                 Time.deltaTime * scaleReturnSpeed
             );
         }
+
+        RefreshDebug(); // 👈 add this
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -59,24 +70,41 @@ public class BumperView : MonoBehaviour, IPlaceableView
 
         ContactPoint2D contact = collision.GetContact(0);
 
-        int finalValue = CalculateFinalValue(ballData);
         float finalForce = CalculateFinalForce();
 
         ApplyBounce(ballView, contact, finalForce);
         ApplyModifierEffects(ballData, contact.point);
 
-        GameBootstrap.Context.Economy.AddMoney(finalValue);
+        int payout = 0;
 
-        RaiseHitSignal(ballData, contact.point, finalValue);
+        if (_runtime != null)
+        {
+            bool shouldPayout = _runtime.RegisterHitAndCheckPayout();
 
+            if (shouldPayout)
+            {
+                payout = CalculateFinalPayout(ballData);
+                GameBootstrap.Context.Economy.AddMoney(payout);
+                _runtime.ResetCharge();
+            }
+        }
+        else
+        {
+            payout = fallbackPayoutValue;
+            GameBootstrap.Context.Economy.AddMoney(payout);
+        }
+
+        RaiseHitSignal(ballData, contact.point, payout);
+
+        RefreshDebug();
         PlayHitFeedback();
     }
 
-    private int CalculateFinalValue(BallRuntimeData ballData)
+    private int CalculateFinalPayout(BallRuntimeData ballData)
     {
         int value = _runtime != null
-            ? _runtime.GetFinalValue()
-            : fallbackBaseValue;
+            ? _runtime.GetFinalPayoutValue()
+            : fallbackPayoutValue;
 
         int globalMoneyBonus = Mathf.RoundToInt(GameBootstrap.Context.Stats.GetMoneyPerHit());
         int globalBumperBonus = Mathf.RoundToInt(GameBootstrap.Context.Stats.GetBumperHitValue());
@@ -86,7 +114,7 @@ public class BumperView : MonoBehaviour, IPlaceableView
 
         int ballMultiplier = Mathf.Max(1, ballData.ValueMultiplier);
         value *= ballMultiplier;
-
+        GameBootstrap.Context.Score.AddScore(value);
         return Mathf.Max(1, value);
     }
 
@@ -140,14 +168,32 @@ public class BumperView : MonoBehaviour, IPlaceableView
             SourceId = sourceId,
             SourceType = HitSourceType.Bumper,
             BaseValue = _runtime != null && _runtime.Definition != null
-                ? _runtime.Definition.BaseValue
-                : fallbackBaseValue,
+                ? _runtime.Definition.PayoutValue
+                : fallbackPayoutValue,
             FinalValue = finalValue,
             Position = hitPoint,
             Ball = ballData
         };
 
         GameBootstrap.Context.Signals.RaiseHitScored(hitData);
+        GameBootstrap.Context.Score.AddScore(1);
+    }
+
+    private void RefreshDebug()
+    {
+        if (_runtime == null)
+        {
+            debugCurrentHits = 0;
+            debugHitsRequired = fallbackHitsRequired;
+            debugPayoutValue = fallbackPayoutValue;
+            debugChargePercent = 0f;
+            return;
+        }
+
+        debugCurrentHits = _runtime.CurrentHits;
+        debugHitsRequired = _runtime.GetFinalHitsRequired();
+        debugPayoutValue = _runtime.GetFinalPayoutValue();
+        debugChargePercent = _runtime.GetChargePercent();
     }
 
     private void PlayHitFeedback()

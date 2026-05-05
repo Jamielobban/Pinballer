@@ -6,7 +6,10 @@ public enum ModifierType
     MultiplyValue,
     Explode,
     Chain,
-    ExtraBounce
+    ExtraBounce,
+
+    ReduceHitsRequired,
+    IncreaseHitsRequired
 }
 
 [CreateAssetMenu(menuName = "Game/Modifiers/Modifier Definition")]

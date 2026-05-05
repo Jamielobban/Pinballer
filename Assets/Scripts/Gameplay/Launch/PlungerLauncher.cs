@@ -8,7 +8,7 @@ public class PlungerLauncher : MonoBehaviour
     [SerializeField] private GameplayInputReader inputReader;
 
     [Header("Launch Tuning")]
-    [SerializeField] private float minLaunchForce = 5f;
+    [SerializeField] private float minLaunchSpeed = 5f;
     [SerializeField] private float maxLaunchForce = 18f;
     [SerializeField] private float chargeSpeed = 14f;
     [SerializeField] private Vector2 launchDirection = new Vector2(-1f, 1f);
@@ -120,7 +120,7 @@ public class PlungerLauncher : MonoBehaviour
             return;
 
         _currentCharge += chargeSpeed * Time.deltaTime;
-        _currentCharge = Mathf.Clamp(_currentCharge, minLaunchForce, maxLaunchForce);
+        _currentCharge = Mathf.Clamp(_currentCharge, minLaunchSpeed, maxLaunchForce);
     }
 
     private void OnLaunchPressed()
@@ -142,7 +142,7 @@ public class PlungerLauncher : MonoBehaviour
             return;
 
         _isCharging = true;
-        _currentCharge = minLaunchForce;
+        _currentCharge = minLaunchSpeed;
 
         GameBootstrap.Context.Loop.OnLaunchStarted();
     }
@@ -170,8 +170,8 @@ public class PlungerLauncher : MonoBehaviour
 
         GameBootstrap.Context.Loop.OnBallLaunched();
 
-        Vector2 force = launchDirection.normalized * finalForce;
-        launchingBallView.Launch(force);
+        Vector2 velocity = launchDirection.normalized * finalForce;
+        launchingBallView.LaunchWithVelocity(velocity);
 
         launchingBallData.IsLoaded = false;
         launchingBallData.IsInPlay = true;

@@ -85,4 +85,8 @@ public class StatService
     {
         return GetIntStat(StatType.BallsPerRound, 3);
     }
+    public float GetScoreMultiplier()
+    {
+        return GetStatValue(StatType.ScoreMultiplier, 1f);
+    }
 }
