@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 
 public class GameBootstrap : MonoBehaviour
 {
     public static GameContext Context { get; private set; }
+    [Header("RNG")]
+    [SerializeField] private bool useFixedSeed = true;
+    [SerializeField] private int fixedSeed = 12345;
 
     [Header("Starting Values")]
     [SerializeField] private int startingMoney = 0;
@@ -27,6 +29,7 @@ public class GameBootstrap : MonoBehaviour
 
     private void BuildContext()
     {
+
         GameSignals signals = new GameSignals();
         GameSession session = new GameSession();
 
@@ -48,6 +51,14 @@ public class GameBootstrap : MonoBehaviour
         );
         ScoreService score = new ScoreService(session,signals);
 
+        int seed = useFixedSeed
+            ? fixedSeed
+            : Random.Range(int.MinValue, int.MaxValue);
+
+        RNGService rng = new RNGService(seed);
+
+        Debug.Log("Run Seed: " + seed);
+
         Context = new GameContext(
             signals,
             session,
@@ -62,7 +73,8 @@ public class GameBootstrap : MonoBehaviour
             inventory,
             loop, 
             ballInventory,
-            score
+            score,
+            rng
         );
     }
 

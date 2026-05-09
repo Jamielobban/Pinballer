@@ -6,6 +6,9 @@ public class BumperView : MonoBehaviour, IPlaceableView
     [Header("Identity")]
     [SerializeField] private string sourceId = "bumper";
 
+    [Header("Default Runtime")]
+    [SerializeField] private PlaceablePartDefinition defaultDefinition;
+
     [Header("Fallback Tuning")]
     [SerializeField] private int fallbackPayoutValue = 2;
     [SerializeField] private int fallbackHitsRequired = 3;
@@ -35,9 +38,19 @@ public class BumperView : MonoBehaviour, IPlaceableView
         _baseScale = visual.localScale;
     }
 
+    private void Start()
+    {
+        EnsureRuntimeExists();
+        RefreshDebug();
+    }
+
     public void Initialize(PlaceableRuntimeData runtime)
     {
         _runtime = runtime;
+
+        if (_runtime != null)
+            _runtime.Instance = gameObject;
+
         RefreshDebug();
     }
 
@@ -52,13 +65,33 @@ public class BumperView : MonoBehaviour, IPlaceableView
             );
         }
 
-        RefreshDebug(); // 👈 add this
+        RefreshDebug();
+    }
+
+    private void EnsureRuntimeExists()
+    {
+        if (_runtime != null)
+            return;
+
+        if (defaultDefinition == null)
+            return;
+
+        _runtime = new PlaceableRuntimeData
+        {
+            Definition = defaultDefinition,
+            Instance = gameObject
+        };
+
+        if (defaultDefinition.DefaultModifiers != null)
+            _runtime.Modifiers.AddRange(defaultDefinition.DefaultModifiers);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (GameBootstrap.Context == null)
             return;
+
+        EnsureRuntimeExists();
 
         BallView ballView = collision.collider.GetComponent<BallView>();
         if (ballView == null)
@@ -92,10 +125,7 @@ public class BumperView : MonoBehaviour, IPlaceableView
             {
                 payout = CalculateFinalPayout(ballData);
 
-                // Charged payout gives money.
                 GameBootstrap.Context.Economy.AddMoney(payout);
-
-                // Charged payout also gives score, affected by combo multiplier.
                 GameBootstrap.Context.Score.AddScore(payout);
 
                 _runtime.ResetCharge();
@@ -129,6 +159,7 @@ public class BumperView : MonoBehaviour, IPlaceableView
 
         int ballMultiplier = Mathf.Max(1, ballData.ValueMultiplier);
         value *= ballMultiplier;
+
         return Mathf.Max(1, value);
     }
 

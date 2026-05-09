@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4f1e949f3dec9b42b4f021097920854, type: 3}
+  m_Name: Bumpers
+  m_EditorClassIdentifier: Assembly-CSharp::ShopPackDefinition
+  Id: Bumper Pack
+  DisplayName: Bumper Pack
+  Cost: 10
+  ChoiceCount: 3
+  AvailableParts:
+  - {fileID: 11400000, guid: 74ea908b6afba5148843795501bded12, type: 2}
+  AvailableModifiers:
+  - {fileID: 11400000, guid: 1056f862c283f5f45b136570879e100a, type: 2}
+  - {fileID: 11400000, guid: 25bdb7368913cfb4496a0f7a4db3182b, type: 2}
+  - {fileID: 11400000, guid: 50e0d9ddda022464b899e46190e30466, type: 2}
+  AvailableUpgrades: []
+  UpgradeOfferChancePercent: 30
+  ModifierChancePercent: 70
+  ExtraModifierChancePercent: 20
+  ModifierCost: 5

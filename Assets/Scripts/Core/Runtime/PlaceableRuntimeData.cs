@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+
 [System.Serializable]
 public class PlaceableRuntimeData
 {
@@ -8,30 +9,32 @@ public class PlaceableRuntimeData
     public GameObject Instance;
 
     public int CurrentHits;
+
+    private const int MinimumHitsRequired = 3;
+
     public int GetFinalValue()
     {
         if (Definition == null)
             return 1;
 
         float value = Definition.BaseValue;
+        float multiplier = 1f;
 
         for (int i = 0; i < Modifiers.Count; i++)
         {
             ModifierDefinition mod = Modifiers[i];
+
             if (mod == null)
                 continue;
 
-            switch (mod.Type)
-            {
-                case ModifierType.AddValue:
-                    value += mod.Value;
-                    break;
+            if (mod.Type == ModifierType.AddValue)
+                value += mod.Value;
 
-                case ModifierType.MultiplyValue:
-                    value *= mod.Value;
-                    break;
-            }
+            if (mod.Type == ModifierType.MultiplyValue)
+                multiplier *= mod.Value;
         }
+
+        value *= multiplier;
 
         return Mathf.Max(1, Mathf.RoundToInt(value));
     }
@@ -46,6 +49,7 @@ public class PlaceableRuntimeData
         for (int i = 0; i < Modifiers.Count; i++)
         {
             ModifierDefinition mod = Modifiers[i];
+
             if (mod == null)
                 continue;
 
@@ -56,20 +60,10 @@ public class PlaceableRuntimeData
         return Mathf.Max(0f, force);
     }
 
-    public bool HasModifier(ModifierType type)
-    {
-        for (int i = 0; i < Modifiers.Count; i++)
-        {
-            if (Modifiers[i] != null && Modifiers[i].Type == type)
-                return true;
-        }
-
-        return false;
-    }
     public int GetFinalHitsRequired()
     {
         if (Definition == null)
-            return 1;
+            return MinimumHitsRequired;
 
         int hits = Definition.HitsRequired;
 
@@ -87,7 +81,7 @@ public class PlaceableRuntimeData
                 hits += Mathf.RoundToInt(mod.Value);
         }
 
-        return Mathf.Max(1, hits);
+        return Mathf.Max(MinimumHitsRequired, hits);
     }
 
     public int GetFinalPayoutValue()
@@ -131,6 +125,22 @@ public class PlaceableRuntimeData
 
     public float GetChargePercent()
     {
-        return Mathf.Clamp01((float)CurrentHits / GetFinalHitsRequired());
+        int hitsRequired = GetFinalHitsRequired();
+
+        if (hitsRequired <= 0)
+            return 0f;
+
+        return Mathf.Clamp01((float)CurrentHits / hitsRequired);
+    }
+
+    public bool HasModifier(ModifierType type)
+    {
+        for (int i = 0; i < Modifiers.Count; i++)
+        {
+            if (Modifiers[i] != null && Modifiers[i].Type == type)
+                return true;
+        }
+
+        return false;
     }
 }

@@ -1,29 +1,29 @@
 using UnityEngine;
 
-public class ShopPanelView : MonoBehaviour
+public class PackOpeningPanelView : MonoBehaviour
 {
     [Header("Panel")]
     [SerializeField] private UIPanelTween panelTween;
 
-    [Header("Shop")]
-    [SerializeField] private ShopManager shopManager;
-    [SerializeField] private ShopPackButtonView[] packButtons;
+    [Header("Pack Opening")]
+    [SerializeField] private PackOpeningManager packOpeningManager;
+    [SerializeField] private PackChoiceButtonView[] choiceButtons;
 
     private void Awake()
     {
         if (panelTween == null)
             panelTween = GetComponent<UIPanelTween>();
 
-        if (shopManager == null)
-            shopManager = FindFirstObjectByType<ShopManager>();
+        if (packOpeningManager == null)
+            packOpeningManager = FindFirstObjectByType<PackOpeningManager>();
     }
 
     private void Start()
     {
         GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
 
-        if (shopManager != null)
-            shopManager.PacksChanged += RefreshPacks;
+        if (packOpeningManager != null)
+            packOpeningManager.ChoicesChanged += RefreshChoices;
 
         BindButtons();
         Refresh();
@@ -34,8 +34,8 @@ public class ShopPanelView : MonoBehaviour
         if (GameBootstrap.Context != null)
             GameBootstrap.Context.Signals.GameStateChanged -= OnGameStateChanged;
 
-        if (shopManager != null)
-            shopManager.PacksChanged -= RefreshPacks;
+        if (packOpeningManager != null)
+            packOpeningManager.ChoicesChanged -= RefreshChoices;
     }
 
     private void OnGameStateChanged(GameState state)
@@ -45,13 +45,13 @@ public class ShopPanelView : MonoBehaviour
 
     private void BindButtons()
     {
-        if (packButtons == null || shopManager == null)
+        if (choiceButtons == null || packOpeningManager == null)
             return;
 
-        for (int i = 0; i < packButtons.Length; i++)
+        for (int i = 0; i < choiceButtons.Length; i++)
         {
-            if (packButtons[i] != null)
-                packButtons[i].Bind(shopManager, i);
+            if (choiceButtons[i] != null)
+                choiceButtons[i].Bind(packOpeningManager, i);
         }
     }
 
@@ -59,14 +59,14 @@ public class ShopPanelView : MonoBehaviour
     {
         bool show =
             GameBootstrap.Context != null &&
-            GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild);
+            GameBootstrap.Context.StateMachine.IsInState(GameState.PackOpening);
 
         if (show)
         {
             if (panelTween != null)
                 panelTween.Show();
 
-            RefreshPacks();
+            RefreshChoices();
         }
         else
         {
@@ -75,15 +75,15 @@ public class ShopPanelView : MonoBehaviour
         }
     }
 
-    private void RefreshPacks()
+    private void RefreshChoices()
     {
-        if (packButtons == null)
+        if (choiceButtons == null)
             return;
 
-        for (int i = 0; i < packButtons.Length; i++)
+        for (int i = 0; i < choiceButtons.Length; i++)
         {
-            if (packButtons[i] != null)
-                packButtons[i].Refresh();
+            if (choiceButtons[i] != null)
+                choiceButtons[i].Refresh();
         }
     }
 }
