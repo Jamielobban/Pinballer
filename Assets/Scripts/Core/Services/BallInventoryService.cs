@@ -66,4 +66,27 @@ public class BallInventoryService
 
         _signals.RaiseBallQueueChanged();
     }
+
+    public List<BallDefinition> GetRoundQueue(int count, BallDefinition fallback)
+    {
+        List<BallDefinition> queue = new List<BallDefinition>();
+
+        if (count <= 0)
+            return queue;
+
+        if (_ownedBalls.Count == 0)
+        {
+            for (int i = 0; i < count; i++)
+                queue.Add(fallback);
+
+            return queue;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            queue.Add(_ownedBalls[i % _ownedBalls.Count]);
+        }
+
+        return queue;
+    }
 }

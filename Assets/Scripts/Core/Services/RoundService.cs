@@ -21,8 +21,11 @@ public class RoundService
 
     public void StartNextRound()
     {
+        UnityEngine.Debug.Log("Testing");
+        UnityEngine.Debug.Log(CurrentRound);
         CurrentRound++;
 
+        UnityEngine.Debug.Log(CurrentRound);
         _ballInventory.ResetQueue();
 
         int ballsThisRound = _stats.GetBallsPerRound();
@@ -39,6 +42,7 @@ public class RoundService
 
     public int GetCurrentTargetScore()
     {
-        return 100 + ((CurrentRound - 1) * 75);
+        if (CurrentRound == 1) return 1;
+        else return 100 + ((CurrentRound - 1) * 75);
     }
 }

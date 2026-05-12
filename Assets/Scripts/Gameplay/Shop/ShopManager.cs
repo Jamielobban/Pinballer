@@ -142,23 +142,23 @@ public class ShopManager : MonoBehaviour
     }
     private void DebugLogPacks()
     {
-        Debug.Log("=== SHOP PACKS ===");
+        //Debug.Log("=== SHOP PACKS ===");
 
-        if (_currentPacks.Count == 0)
-        {
-            Debug.Log("No packs.");
-            return;
-        }
+        //if (_currentPacks.Count == 0)
+        //{
+            //Debug.Log("No packs.");
+            //return;
+        //}
 
-        for (int i = 0; i < _currentPacks.Count; i++)
-        {
-            ShopPackOffer offer = _currentPacks[i];
+        //for (int i = 0; i < _currentPacks.Count; i++)
+        //{
+            //ShopPackOffer offer = _currentPacks[i];
 
-            Debug.Log(
-                (i + 1) + ": " +
-                offer.GetDisplayName() +
-                " | Cost: " + offer.Cost
-            );
-        }
+            //Debug.Log(
+                //(i + 1) + ": " +
+                //offer.GetDisplayName() +
+                //" | Cost: " + offer.Cost
+            //);
+        //}
     }
 }

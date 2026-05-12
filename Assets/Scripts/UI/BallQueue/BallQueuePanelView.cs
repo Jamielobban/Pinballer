@@ -75,15 +75,18 @@ public class BallQueuePanelView : MonoBehaviour
     {
         Clear();
 
-        if (GameBootstrap.Context == null || slotParent == null || slotPrefab == null)
+        int ballsPerRound = GameBootstrap.Context.Stats.GetBallsPerRound();
+        IReadOnlyList<BallDefinition> ownedBalls = GameBootstrap.Context.BallInventory.OwnedBalls;
+
+        if (ownedBalls.Count == 0)
             return;
 
-        IReadOnlyList<BallDefinition> balls = GameBootstrap.Context.BallInventory.OwnedBalls;
-
-        for (int i = 0; i < balls.Count; i++)
+        for (int i = 0; i < ballsPerRound; i++)
         {
+            BallDefinition ball = ownedBalls[i % ownedBalls.Count];
+
             BallQueueSlotView slot = Instantiate(slotPrefab, slotParent);
-            slot.Setup(this, i, balls[i]);
+            slot.Setup(this, i, ball);
             _spawnedSlots.Add(slot);
 
             UIAppearTween appear = slot.GetComponent<UIAppearTween>();

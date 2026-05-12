@@ -2,45 +2,28 @@ using UnityEngine;
 
 public class ShopPanelView : MonoBehaviour
 {
-    [Header("Panel")]
-    [SerializeField] private UIPanelTween panelTween;
-
-    [Header("Shop")]
     [SerializeField] private ShopManager shopManager;
     [SerializeField] private ShopPackButtonView[] packButtons;
 
     private void Awake()
     {
-        if (panelTween == null)
-            panelTween = GetComponent<UIPanelTween>();
-
         if (shopManager == null)
             shopManager = FindFirstObjectByType<ShopManager>();
     }
 
     private void Start()
     {
-        GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
-
         if (shopManager != null)
             shopManager.PacksChanged += RefreshPacks;
 
         BindButtons();
-        Refresh();
+        RefreshPacks();
     }
 
     private void OnDestroy()
     {
-        if (GameBootstrap.Context != null)
-            GameBootstrap.Context.Signals.GameStateChanged -= OnGameStateChanged;
-
         if (shopManager != null)
             shopManager.PacksChanged -= RefreshPacks;
-    }
-
-    private void OnGameStateChanged(GameState state)
-    {
-        Refresh();
     }
 
     private void BindButtons()
@@ -52,26 +35,6 @@ public class ShopPanelView : MonoBehaviour
         {
             if (packButtons[i] != null)
                 packButtons[i].Bind(shopManager, i);
-        }
-    }
-
-    private void Refresh()
-    {
-        bool show =
-            GameBootstrap.Context != null &&
-            GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild);
-
-        if (show)
-        {
-            if (panelTween != null)
-                panelTween.Show();
-
-            RefreshPacks();
-        }
-        else
-        {
-            if (panelTween != null)
-                panelTween.Hide();
         }
     }
 

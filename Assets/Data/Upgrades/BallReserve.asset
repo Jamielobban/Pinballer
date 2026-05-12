@@ -16,8 +16,7 @@ MonoBehaviour:
   DisplayName: Ball Reserve
   Description: 
   Category: 2
-  TargetMachinePart: 0
-  AffectedStat: 11
+  AffectedStat: 7
   BaseCost: 10
   CostGrowth: 1.45
   MaxLevel: 999

@@ -25,8 +25,8 @@ public class GameLoopController
     public void StartRound()
     {
         _rounds.StartNextRound();
-        //int targetScore = _rounds.GetCurrentTargetScore();
-        GameBootstrap.Context.Score.StartRound(100);
+        int targetScore = _rounds.GetCurrentTargetScore();
+        GameBootstrap.Context.Score.StartRound(targetScore);
         _stateMachine.EnterState(GameState.WaitingForBall);
     }
 

@@ -24,8 +24,16 @@ public class BackToShopButton : MonoBehaviour
         if (GameBootstrap.Context == null)
             return;
 
-        if (!GameBootstrap.Context.StateMachine.IsInState(GameState.BoardEdit))
+        bool canReturn =
+            GameBootstrap.Context.StateMachine.IsInState(GameState.BoardEdit) ||
+            GameBootstrap.Context.StateMachine.IsInState(GameState.PackOpening);
+
+        if (!canReturn)
+        {
+            Debug.Log(GameBootstrap.Context.StateMachine.CurrentState);
+            Debug.Log("Cannot go back to shop from this state.");
             return;
+        }
 
         GameBootstrap.Context.Loop.EnterShopBuild();
     }
