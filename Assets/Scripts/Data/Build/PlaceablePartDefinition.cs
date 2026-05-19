@@ -28,9 +28,6 @@ public class PlaceablePartDefinition : ScriptableObject
     [Header("Default Modifiers")]
     public ModifierDefinition[] DefaultModifiers;
 
-    [Header("Allowed Modifiers")]
-    public ModifierType[] AllowedModifierTypes;
-
     [Header("Charge / Payout")]
     public int HitsRequired = 3;
     public int PayoutValue = 10;
@@ -40,15 +37,6 @@ public class PlaceablePartDefinition : ScriptableObject
         if (modifier == null)
             return false;
 
-        if (AllowedModifierTypes == null || AllowedModifierTypes.Length == 0)
-            return true;
-
-        for (int i = 0; i < AllowedModifierTypes.Length; i++)
-        {
-            if (AllowedModifierTypes[i] == modifier.Type)
-                return true;
-        }
-
-        return false;
+        return modifier.CanApplyTo(this);
     }
 }

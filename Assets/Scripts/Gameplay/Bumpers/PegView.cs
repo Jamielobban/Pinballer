@@ -112,6 +112,10 @@ public class PegView : MonoBehaviour, IPlaceableView, IBoardHittable
         GameBootstrap.Context.Signals.RaiseHitScored(hitData);
         BallAbilityRunner.OnHit(ballData, hitData);
 
+        if (_runtime != null)
+            _runtime.TriggerModifierHitEffects(ballData, hitData);
+
+        Debug.Log("Hit on" + " -> " + gameObject.name);
         RefreshDebug();
         PlayHitFeedback();
     }

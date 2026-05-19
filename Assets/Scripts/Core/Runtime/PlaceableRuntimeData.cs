@@ -143,4 +143,48 @@ public class PlaceableRuntimeData
 
         return false;
     }
+
+    public void TriggerModifierHitEffects(BallRuntimeData ball, HitEventData hitData)
+    {
+        if (Modifiers == null)
+            return;
+
+        for (int i = 0; i < Modifiers.Count; i++)
+        {
+            ModifierDefinition modifier = Modifiers[i];
+
+            if (modifier == null || modifier.Effects == null)
+                continue;
+
+            for (int e = 0; e < modifier.Effects.Length; e++)
+            {
+                PlaceableModifierEffect effect = modifier.Effects[e];
+
+                if (effect != null)
+                    effect.OnHit(this, ball, hitData);
+            }
+        }
+    }
+
+    public void TriggerModifierPayoutEffects(BallRuntimeData ball, HitEventData hitData)
+    {
+        if (Modifiers == null)
+            return;
+
+        for (int i = 0; i < Modifiers.Count; i++)
+        {
+            ModifierDefinition modifier = Modifiers[i];
+
+            if (modifier == null || modifier.Effects == null)
+                continue;
+
+            for (int e = 0; e < modifier.Effects.Length; e++)
+            {
+                PlaceableModifierEffect effect = modifier.Effects[e];
+
+                if (effect != null)
+                    effect.OnPayout(this, ball, hitData);
+            }
+        }
+    }
 }

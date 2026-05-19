@@ -107,6 +107,12 @@ public class BumperView : MonoBehaviour, IPlaceableView, IBoardHittable
 
         int payout = 0;
 
+        HitEventData hitData = CreateHitData(
+            ballData,
+            contact.point,
+            payout
+        );
+
         if (_runtime != null)
         {
             bool shouldPayout = _runtime.RegisterHitAndCheckPayout();
@@ -114,9 +120,12 @@ public class BumperView : MonoBehaviour, IPlaceableView, IBoardHittable
             if (shouldPayout)
             {
                 payout = CalculateFinalPayout(ballData);
+                hitData.FinalValue = payout;
 
                 GameBootstrap.Context.Economy.AddMoney(payout);
                 GameBootstrap.Context.Score.AddScore(payout);
+
+                _runtime.TriggerModifierPayoutEffects(ballData, hitData);
 
                 _runtime.ResetCharge();
             }
@@ -124,15 +133,17 @@ public class BumperView : MonoBehaviour, IPlaceableView, IBoardHittable
         else
         {
             payout = fallbackPayoutValue;
+            hitData.FinalValue = payout;
 
             GameBootstrap.Context.Economy.AddMoney(payout);
             GameBootstrap.Context.Score.AddScore(payout);
         }
 
-        HitEventData hitData = CreateHitData(ballData, contact.point, payout);
-
         GameBootstrap.Context.Signals.RaiseHitScored(hitData);
         BallAbilityRunner.OnHit(ballData, hitData);
+
+        if (_runtime != null)
+            _runtime.TriggerModifierHitEffects(ballData, hitData);
 
         RefreshDebug();
         PlayHitFeedback();
@@ -201,7 +212,10 @@ public class BumperView : MonoBehaviour, IPlaceableView, IBoardHittable
         );
     }
 
-    private HitEventData CreateHitData(BallRuntimeData ballData, Vector2 hitPoint, int finalValue)
+    private HitEventData CreateHitData(
+        BallRuntimeData ballData,
+        Vector2 hitPoint,
+        int finalValue)
     {
         return new HitEventData
         {
