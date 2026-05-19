@@ -15,8 +15,11 @@ MonoBehaviour:
   Id: normal_ball
   DisplayName: normal_ball
   Prefab: {fileID: 5263402991697533973, guid: f743e6a22a70e6e4bbfe078ad83751ac, type: 3}
+  Sprite: {fileID: 0}
+  Tint: {r: 1, g: 1, b: 1, a: 1}
+  PhysicsMaterial: {fileID: 0}
   Mass: 1
-  GravityScale: 1
+  GravityScale: 2
   LinearDrag: 0
   AngularDrag: 0
   SizeMultiplier: 1
@@ -24,3 +27,4 @@ MonoBehaviour:
   Friction: 0
   ValueMultiplier: 1
   BaseCost: 25
+  abilities: []

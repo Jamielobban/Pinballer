@@ -10,20 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b4f1e949f3dec9b42b4f021097920854, type: 3}
-  m_Name: Bumpers
+  m_Name: Basic Parts
   m_EditorClassIdentifier: Assembly-CSharp::ShopPackDefinition
-  Id: Bumper Pack
-  DisplayName: Bumper Pack
+  Id: Basic Parts Pack
+  DisplayName: Basic Parts Pack
   Cost: 10
   ChoiceCount: 3
   AvailableParts:
   - {fileID: 11400000, guid: 74ea908b6afba5148843795501bded12, type: 2}
-  AvailableModifiers:
-  - {fileID: 11400000, guid: 1056f862c283f5f45b136570879e100a, type: 2}
-  - {fileID: 11400000, guid: 25bdb7368913cfb4496a0f7a4db3182b, type: 2}
-  - {fileID: 11400000, guid: 50e0d9ddda022464b899e46190e30466, type: 2}
+  - {fileID: 11400000, guid: c6098e1a6ecde914292e635797969b18, type: 2}
+  - {fileID: 11400000, guid: 6182869f471d6b647b565efd28afccde, type: 2}
+  AvailableModifiers: []
   AvailableUpgrades: []
-  UpgradeOfferChancePercent: 30
-  ModifierChancePercent: 70
-  ExtraModifierChancePercent: 20
+  UpgradeOfferChancePercent: 0
+  ModifierChancePercent: 0
+  ExtraModifierChancePercent: 0
   ModifierCost: 5

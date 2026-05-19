@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using System.Collections.Generic;
 [CreateAssetMenu(menuName = "Game/Balls/Ball Definition")]
 public class BallDefinition : ScriptableObject
 {
@@ -29,4 +29,9 @@ public class BallDefinition : ScriptableObject
 
     [Header("Shop")]
     public int BaseCost = 25;
+
+    [SerializeField]
+    private BallAbilityDefinition[] abilities;
+
+    public IReadOnlyList<BallAbilityDefinition> Abilities => abilities;
 }

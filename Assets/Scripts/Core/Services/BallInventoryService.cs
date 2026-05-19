@@ -1,92 +1,64 @@
+using System;
 using System.Collections.Generic;
 
 public class BallInventoryService
 {
     private readonly GameSignals _signals;
-    private readonly List<BallDefinition> _ownedBalls = new List<BallDefinition>();
+    private readonly List<BallRuntimeData> _ownedBalls = new();
 
-    private int _nextBallIndex;
+    public IReadOnlyList<BallRuntimeData> OwnedBalls => _ownedBalls;
 
-    public IReadOnlyList<BallDefinition> OwnedBalls => _ownedBalls;
+    public event Action OnChanged;
 
     public BallInventoryService(GameSignals signals)
     {
         _signals = signals;
     }
 
-    public void AddBall(BallDefinition ballDefinition)
+    public void AddBall(BallDefinition definition)
     {
-        if (ballDefinition == null)
+        if (definition == null)
             return;
 
-        _ownedBalls.Add(ballDefinition);
-        _signals.RaiseBallQueueChanged();
-    }
-
-    public void Clear()
-    {
-        _ownedBalls.Clear();
-        _nextBallIndex = 0;
-        _signals.RaiseBallQueueChanged();
-    }
-
-    public BallDefinition GetNextBall(BallDefinition fallbackBall)
-    {
-        if (_ownedBalls.Count == 0)
-            return fallbackBall;
-
-        if (_nextBallIndex >= _ownedBalls.Count)
-            _nextBallIndex = 0;
-
-        BallDefinition nextBall = _ownedBalls[_nextBallIndex];
-        _nextBallIndex++;
-
-        return nextBall != null ? nextBall : fallbackBall;
-    }
-
-    public void ResetQueue()
-    {
-        _nextBallIndex = 0;
-    }
-
-    public void SwapBalls(int indexA, int indexB)
-    {
-        if (indexA < 0 || indexA >= _ownedBalls.Count)
-            return;
-
-        if (indexB < 0 || indexB >= _ownedBalls.Count)
-            return;
-
-        if (indexA == indexB)
-            return;
-
-        BallDefinition temp = _ownedBalls[indexA];
-        _ownedBalls[indexA] = _ownedBalls[indexB];
-        _ownedBalls[indexB] = temp;
-
-        _signals.RaiseBallQueueChanged();
-    }
-
-    public List<BallDefinition> GetRoundQueue(int count, BallDefinition fallback)
-    {
-        List<BallDefinition> queue = new List<BallDefinition>();
-
-        if (count <= 0)
-            return queue;
-
-        if (_ownedBalls.Count == 0)
+        BallRuntimeData ball = new BallRuntimeData
         {
-            for (int i = 0; i < count; i++)
-                queue.Add(fallback);
+            BallId = _ownedBalls.Count + 1,
+            Definition = definition,
+            IsLoaded = false,
+            IsInPlay = false,
+            SizeMultiplier = definition.SizeMultiplier,
+            SpeedMultiplier = 1f,
+            ValueMultiplier = definition.ValueMultiplier
+        };
 
-            return queue;
-        }
+        _ownedBalls.Add(ball);
 
-        for (int i = 0; i < count; i++)
-        {
-            queue.Add(_ownedBalls[i % _ownedBalls.Count]);
-        }
+        OnChanged?.Invoke();
+        _signals.RaiseBallQueueChanged();
+    }
 
-        return queue;
+    public void AddBall(BallRuntimeData ball)
+    {
+        if (ball == null)
+            return;
+
+        _ownedBalls.Add(ball);
+
+        OnChanged?.Invoke();
+        _signals.RaiseBallQueueChanged();
+    }
+
+    public void SwapBalls(int a, int b)
+    {
+        if (a < 0 || b < 0)
+            return;
+
+        if (a >= _ownedBalls.Count || b >= _ownedBalls.Count)
+            return;
+
+        (_ownedBalls[a], _ownedBalls[b]) = (_ownedBalls[b], _ownedBalls[a]);
+
+        OnChanged?.Invoke();
+        _signals.RaiseBallQueueChanged();
     }
 }

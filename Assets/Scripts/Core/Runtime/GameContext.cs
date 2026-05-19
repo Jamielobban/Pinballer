@@ -1,20 +1,21 @@
 public class GameContext
 {
-    public GameSignals Signals { get; private set; }
-    public GameSession Session { get; private set; }
-    public StateMachineService StateMachine { get; private set; }
-    public EconomyService Economy { get; private set; }
-    public UpgradeService Upgrades { get; private set; }
-    public ModifierService Modifiers { get; private set; }
-    public StatService Stats { get; private set; }
-    public BallReserveService BallReserve { get; private set; }
-    public BallLifecycleService BallLifecycle { get; private set; }
-    public RoundService Rounds { get; private set; }
-    public InventoryService Inventory { get; private set; }
-    public GameLoopController Loop { get; private set; }
-    public BallInventoryService BallInventory { get; private set; }
+    public GameSignals Signals { get; }
+    public GameSession Session { get; }
+    public StateMachineService StateMachine { get; }
+    public EconomyService Economy { get; }
+    public UpgradeService Upgrades { get; }
+    public ModifierService Modifiers { get; }
+    public StatService Stats { get; }
+    public BallReserveService BallReserve { get; }
+    public BallLifecycleService BallLifecycle { get; }
+    public RoundService Rounds { get; }
+    public InventoryService Inventory { get; }
+    public GameLoopController Loop { get; }
+    public BallInventoryService BallInventory { get; }
     public ScoreService Score { get; }
-    public RNGService RNG { get; private set; }
+    public RNGService RNG { get; }
+    public BallLotteryService BallLottery { get; }
 
     public GameContext(
         GameSignals signals,
@@ -29,8 +30,10 @@ public class GameContext
         RoundService rounds,
         InventoryService inventory,
         GameLoopController loop,
-        BallInventoryService ballInventory, ScoreService score,
-        RNGService rng)
+        BallInventoryService ballInventory,
+        ScoreService score,
+        RNGService rng,
+        BallLotteryService ballLottery)
     {
         Signals = signals;
         Session = session;
@@ -47,5 +50,6 @@ public class GameContext
         BallInventory = ballInventory;
         Score = score;
         RNG = rng;
+        BallLottery = ballLottery;
     }
 }

@@ -1,37 +1,40 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ShopPackButtonView : MonoBehaviour
 {
-    [Header("References")]
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text label;
 
+    private ShopPanelView _panel;
     private ShopManager _shopManager;
     private int _packIndex = -1;
+    private UIAnimatedCard _animatedCard;
 
     private void Awake()
     {
         if (button == null)
             button = GetComponent<Button>();
 
+        _animatedCard = GetComponent<UIAnimatedCard>();
+
         if (button != null)
-            button.onClick.AddListener(BuyPack);
+            button.onClick.AddListener(OnClicked);
     }
 
     private void OnDestroy()
     {
         if (button != null)
-            button.onClick.RemoveListener(BuyPack);
+            button.onClick.RemoveListener(OnClicked);
     }
 
-    public void Bind(ShopManager shopManager, int packIndex)
+    public void Bind(ShopPanelView panel, ShopManager shopManager, int packIndex)
     {
+        _panel = panel;
         _shopManager = shopManager;
         _packIndex = packIndex;
-
-        Refresh();
     }
 
     public void Refresh()
@@ -42,7 +45,7 @@ public class ShopPackButtonView : MonoBehaviour
         if (_packIndex < 0 || _packIndex >= _shopManager.CurrentPacks.Count)
         {
             label.text = "Empty";
-            button.interactable = false;
+            SetInteractable(false);
             return;
         }
 
@@ -51,7 +54,7 @@ public class ShopPackButtonView : MonoBehaviour
         if (offer == null || offer.PackDefinition == null)
         {
             label.text = "Missing Pack";
-            button.interactable = false;
+            SetInteractable(false);
             return;
         }
 
@@ -62,14 +65,49 @@ public class ShopPackButtonView : MonoBehaviour
             $"Cost: {offer.Cost}\n" +
             $"Choices: {offer.PackDefinition.ChoiceCount}";
 
-        button.interactable = canAfford;
+        if (_shopManager.IsSelectingRerollTarget)
+            label.text += "\nSELECT TO REROLL";
+
+        SetInteractable(canAfford);
     }
 
-    private void BuyPack()
+    private void OnClicked()
+    {
+        if (_panel == null)
+            return;
+
+        _panel.HandlePackClicked(this);
+    }
+
+    public void ExecuteClick()
     {
         if (_shopManager == null)
             return;
 
         _shopManager.BuyPack(_packIndex);
+    }
+
+    public void SetInteractable(bool interactable)
+    {
+        if (_animatedCard != null)
+            _animatedCard.SetInteractable(interactable);
+        else if (button != null)
+            button.interactable = interactable;
+    }
+
+    public Tween PlayAppear(float delay)
+    {
+        if (_animatedCard == null)
+            return null;
+
+        return _animatedCard.PlayAppear(delay);
+    }
+
+    public Tween PlayDisappear(float delay = 0f)
+    {
+        if (_animatedCard == null)
+            return null;
+
+        return _animatedCard.PlayDisappear(delay);
     }
 }

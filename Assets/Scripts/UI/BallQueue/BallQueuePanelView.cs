@@ -6,9 +6,7 @@ public class BallQueuePanelView : MonoBehaviour
     [SerializeField] private Transform slotParent;
     [SerializeField] private BallQueueSlotView slotPrefab;
 
-    private readonly List<BallQueueSlotView> _spawnedSlots = new List<BallQueueSlotView>();
-
-    private int _selectedIndex = -1;
+    private readonly List<BallQueueSlotView> _spawnedSlots = new();
 
     private void Start()
     {
@@ -27,7 +25,6 @@ public class BallQueuePanelView : MonoBehaviour
             return;
 
         GameBootstrap.Context.Signals.BallQueueChanged += Refresh;
-        GameBootstrap.Context.Signals.GameStateChanged += OnGameStateChanged;
     }
 
     private void Unsubscribe()
@@ -36,65 +33,37 @@ public class BallQueuePanelView : MonoBehaviour
             return;
 
         GameBootstrap.Context.Signals.BallQueueChanged -= Refresh;
-        GameBootstrap.Context.Signals.GameStateChanged -= OnGameStateChanged;
-    }
-
-    private void OnGameStateChanged(GameState state)
-    {
-        Refresh();
-    }
-
-    public void OnSlotClicked(int index)
-    {
-        if (GameBootstrap.Context == null)
-            return;
-
-        if (!CanEditQueue())
-            return;
-
-        if (_selectedIndex < 0)
-        {
-            _selectedIndex = index;
-            UpdateSelectionVisuals();
-            return;
-        }
-
-        if (_selectedIndex == index)
-        {
-            _selectedIndex = -1;
-            UpdateSelectionVisuals();
-            return;
-        }
-
-        GameBootstrap.Context.BallInventory.SwapBalls(_selectedIndex, index);
-        _selectedIndex = -1;
-        Refresh();
     }
 
     private void Refresh()
     {
         Clear();
 
-        int ballsPerRound = GameBootstrap.Context.Stats.GetBallsPerRound();
-        IReadOnlyList<BallDefinition> ownedBalls = GameBootstrap.Context.BallInventory.OwnedBalls;
-
-        if (ownedBalls.Count == 0)
+        if (GameBootstrap.Context == null)
             return;
 
-        for (int i = 0; i < ballsPerRound; i++)
-        {
-            BallDefinition ball = ownedBalls[i % ownedBalls.Count];
+        IReadOnlyList<BallRuntimeData> reserveBalls =
+            GameBootstrap.Context.BallReserve.GetReserveSnapshot();
 
-            BallQueueSlotView slot = Instantiate(slotPrefab, slotParent);
-            slot.Setup(this, i, ball);
+        for (int i = 0; i < reserveBalls.Count; i++)
+        {
+            BallRuntimeData ball = reserveBalls[i];
+
+            if (ball == null)
+                continue;
+
+            BallQueueSlotView slot =
+                Instantiate(slotPrefab, slotParent);
+
+            slot.Setup(this, i, ball.Definition, 1);
+
             _spawnedSlots.Add(slot);
 
             UIAppearTween appear = slot.GetComponent<UIAppearTween>();
+
             if (appear != null)
                 appear.Play(i * 0.04f);
         }
-
-        UpdateSelectionVisuals();
     }
 
     private void Clear()
@@ -108,17 +77,8 @@ public class BallQueuePanelView : MonoBehaviour
         _spawnedSlots.Clear();
     }
 
-    private void UpdateSelectionVisuals()
+    public void OnSlotClicked(int index)
     {
-        for (int i = 0; i < _spawnedSlots.Count; i++)
-        {
-            _spawnedSlots[i].SetSelected(i == _selectedIndex);
-        }
-    }
-
-    private bool CanEditQueue()
-    {
-        return GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild)
-            || GameBootstrap.Context.StateMachine.IsInState(GameState.BoardEdit);
+        // Current round queue is not editable yet.
     }
 }

@@ -1,43 +1,75 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 public class BallReserveService
 {
-    private readonly GameSession _session;
-    private readonly GameSignals _signals;
+    private readonly Queue<BallRuntimeData> _reserve = new();
 
-    public BallReserveService(GameSession session, GameSignals signals)
-    {
-        _session = session;
-        _signals = signals;
-    }
-
-    public int CurrentReserve => _session.BallsInReserve;
-
-    public void SetStartingReserve(int amount)
-    {
-        _session.SetReserve(amount);
-        _signals.RaiseBallReserveChanged(_session.BallsInReserve);
-    }
+    public event Action OnReserveChanged;
 
     public bool HasReserve()
     {
-        return _session.BallsInReserve > 0;
+        return _reserve.Count > 0;
     }
 
-    public bool TryConsumeOne()
+    public void SetReserve(IEnumerable<BallRuntimeData> balls)
     {
-        if (_session.BallsInReserve <= 0)
+        _reserve.Clear();
+
+        foreach (var ball in balls)
+        {
+            _reserve.Enqueue(ball);
+        }
+
+        OnReserveChanged?.Invoke();
+
+        if (GameBootstrap.Context != null)
+            GameBootstrap.Context.Signals.RaiseBallQueueChanged();
+    }
+
+    public bool TryConsumeOne(out BallRuntimeData ball)
+    {
+        ball = null;
+
+        if (_reserve.Count <= 0)
             return false;
 
-        _session.ConsumeReserve(1);
-        _signals.RaiseBallReserveChanged(_session.BallsInReserve);
+        ball = _reserve.Dequeue();
+
+        OnReserveChanged?.Invoke();
+
+        if (GameBootstrap.Context != null)
+            GameBootstrap.Context.Signals.RaiseBallQueueChanged();
+
         return true;
     }
 
-    public void AddBalls(int amount)
+    public IReadOnlyList<BallRuntimeData> GetReserveSnapshot()
     {
-        if (amount <= 0)
+        return _reserve.ToList();
+    }
+
+    public void Clear()
+    {
+        _reserve.Clear();
+
+        OnReserveChanged?.Invoke();
+
+        if (GameBootstrap.Context != null)
+            GameBootstrap.Context.Signals.RaiseBallQueueChanged();
+    }
+
+    public void AddToReserve(BallRuntimeData ball)
+    {
+        if (ball == null)
             return;
 
-        _session.AddReserve(amount);
-        _signals.RaiseBallReserveChanged(_session.BallsInReserve);
+        _reserve.Enqueue(ball);
+
+        OnReserveChanged?.Invoke();
+
+        if (GameBootstrap.Context != null)
+            GameBootstrap.Context.Signals.RaiseBallQueueChanged();
     }
 }

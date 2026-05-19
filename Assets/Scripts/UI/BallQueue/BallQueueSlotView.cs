@@ -6,6 +6,7 @@ public class BallQueueSlotView : MonoBehaviour
 {
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text label;
+    [SerializeField] private TMP_Text countText;
     [SerializeField] private Image icon;
     [SerializeField] private Image background;
 
@@ -31,7 +32,11 @@ public class BallQueueSlotView : MonoBehaviour
             button.onClick.RemoveListener(OnClicked);
     }
 
-    public void Setup(BallQueuePanelView panel, int index, BallDefinition ballDefinition)
+    public void Setup(
+        BallQueuePanelView panel,
+        int index,
+        BallDefinition ballDefinition,
+        int count = 1)
     {
         _panel = panel;
         _index = index;
@@ -49,9 +54,17 @@ public class BallQueueSlotView : MonoBehaviour
         if (label != null)
             label.text = displayName;
 
+        if (countText != null)
+        {
+            bool showCount = count > 1;
+            countText.gameObject.SetActive(showCount);
+            countText.text = showCount ? $"x{count}" : "";
+        }
+
         if (icon != null)
         {
             icon.enabled = _ballDefinition != null && _ballDefinition.Sprite != null;
+
             if (_ballDefinition != null && _ballDefinition.Sprite != null)
             {
                 icon.sprite = _ballDefinition.Sprite;

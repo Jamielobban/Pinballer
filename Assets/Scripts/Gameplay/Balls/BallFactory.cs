@@ -42,6 +42,24 @@ public class BallFactory : MonoBehaviour
         };
 
         ballView.Initialize(runtimeData);
+        BallAbilityRunner.OnSpawn(runtimeData);
+
+        return runtimeData;
+    }
+
+    public BallRuntimeData SpawnFromRuntime(Vector3 position, BallRuntimeData source)
+    {
+        if (source == null || source.Definition == null)
+            return null;
+
+        BallRuntimeData runtimeData = CreateBall(position, source.Definition);
+
+        if (runtimeData == null)
+            return null;
+
+        runtimeData.RemainingRevives = source.RemainingRevives;
+        runtimeData.RemainingSplits = source.RemainingSplits;
+        runtimeData.HitCount = source.HitCount;
 
         return runtimeData;
     }

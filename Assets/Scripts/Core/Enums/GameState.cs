@@ -3,6 +3,7 @@ public enum GameState
     Boot,
     ShopBuild,
     PackOpening,
+    LotteryDraw,
     BoardEdit,
     WaitingForBall,
     BallLoaded,

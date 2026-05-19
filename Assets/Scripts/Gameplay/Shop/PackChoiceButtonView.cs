@@ -1,37 +1,40 @@
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PackChoiceButtonView : MonoBehaviour
 {
-    [Header("References")]
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text label;
 
+    private PackOpeningPanelView _panel;
     private PackOpeningManager _packOpeningManager;
     private int _choiceIndex = -1;
+    private UIAnimatedCard _animatedCard;
 
     private void Awake()
     {
         if (button == null)
             button = GetComponent<Button>();
 
+        _animatedCard = GetComponent<UIAnimatedCard>();
+
         if (button != null)
-            button.onClick.AddListener(ChooseReward);
+            button.onClick.AddListener(OnClicked);
     }
 
     private void OnDestroy()
     {
         if (button != null)
-            button.onClick.RemoveListener(ChooseReward);
+            button.onClick.RemoveListener(OnClicked);
     }
 
-    public void Bind(PackOpeningManager packOpeningManager, int choiceIndex)
+    public void Bind(PackOpeningPanelView panel, PackOpeningManager packOpeningManager, int choiceIndex)
     {
+        _panel = panel;
         _packOpeningManager = packOpeningManager;
         _choiceIndex = choiceIndex;
-
-        Refresh();
     }
 
     public void Refresh()
@@ -42,7 +45,7 @@ public class PackChoiceButtonView : MonoBehaviour
         if (_choiceIndex < 0 || _choiceIndex >= _packOpeningManager.CurrentChoices.Count)
         {
             label.text = "Empty";
-            button.interactable = false;
+            SetInteractable(false);
             return;
         }
 
@@ -51,7 +54,7 @@ public class PackChoiceButtonView : MonoBehaviour
         if (choice == null)
         {
             label.text = "Missing Choice";
-            button.interactable = false;
+            SetInteractable(false);
             return;
         }
 
@@ -60,10 +63,18 @@ public class PackChoiceButtonView : MonoBehaviour
             $"Type: {choice.OfferType}\n" +
             $"Mods: {GetModifierText(choice)}";
 
-        button.interactable = true;
+        SetInteractable(true);
     }
 
-    private void ChooseReward()
+    private void OnClicked()
+    {
+        if (_panel == null)
+            return;
+
+        _panel.HandleChoiceClicked(this);
+    }
+
+    public void ExecuteClick()
     {
         if (_packOpeningManager == null)
             return;
@@ -71,29 +82,48 @@ public class PackChoiceButtonView : MonoBehaviour
         _packOpeningManager.ChooseReward(_choiceIndex);
     }
 
-    private string GetModifierText(ShopOffer offer)
+    public void SetInteractable(bool interactable)
     {
-        if (offer == null || offer.OfferType != ShopOfferType.Placeable)
-            return "-";
+        if (_animatedCard != null)
+            _animatedCard.SetInteractable(interactable);
+        else if (button != null)
+            button.interactable = interactable;
+    }
 
-        if (offer.Modifiers == null || offer.Modifiers.Count == 0)
+    public Tween PlayAppear(float delay)
+    {
+        if (_animatedCard == null)
+            return null;
+
+        return _animatedCard.PlayAppear(delay);
+    }
+
+    public Tween PlayDisappear(float delay = 0f)
+    {
+        if (_animatedCard == null)
+            return null;
+
+        return _animatedCard.PlayDisappear(delay);
+    }
+
+    private string GetModifierText(ShopOffer choice)
+    {
+        if (choice == null || choice.Modifiers == null || choice.Modifiers.Count == 0)
             return "None";
 
         string text = "";
 
-        for (int i = 0; i < offer.Modifiers.Count; i++)
+        for (int i = 0; i < choice.Modifiers.Count; i++)
         {
-            ModifierDefinition modifier = offer.Modifiers[i];
-
-            if (modifier == null)
+            if (choice.Modifiers[i] == null)
                 continue;
 
-            if (text.Length > 0)
+            if (!string.IsNullOrEmpty(text))
                 text += ", ";
 
-            text += modifier.DisplayName;
+            text += choice.Modifiers[i].DisplayName;
         }
 
-        return text;
+        return string.IsNullOrEmpty(text) ? "None" : text;
     }
 }

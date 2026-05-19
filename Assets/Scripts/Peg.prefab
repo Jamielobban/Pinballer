@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2231357846902908841}
   - component: {fileID: 9035382655895248278}
   - component: {fileID: 5444603488065923121}
+  - component: {fileID: 4400860205803687431}
   m_Layer: 0
   m_Name: Peg
   m_TagString: Untagged
@@ -138,3 +139,28 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &4400860205803687431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8941574564184570116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d79a5ddb6cf5fda4c8ed86dffbf20e50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PegView
+  sourceId: peg
+  defaultDefinition: {fileID: 11400000, guid: c6098e1a6ecde914292e635797969b18, type: 2}
+  fallbackScoreValue: 1
+  fallbackMoneyValue: 0
+  visual: {fileID: 2231357846902908841}
+  hitScaleMultiplier: 1.1
+  scaleReturnSpeed: 10
+  _runtime:
+    Definition: {fileID: 0}
+    Modifiers: []
+    Instance: {fileID: 0}
+    CurrentHits: 0
+  debugPayoutValue: 0

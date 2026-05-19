@@ -6,5 +6,6 @@ public enum HitSourceType
     Target,
     Sling,
     Lane,
-    Bonus
+    Bonus,
+    Peg
 }

@@ -19,5 +19,8 @@ MonoBehaviour:
   Prefab: {fileID: 8941574564184570116, guid: cc7c24ed5229dac4996a7fb56ae5a6b4, type: 3}
   BaseValue: 1
   Force: 10
-  DefaultModifiers: []
-  AllowedModifierTypes: 
+  DefaultModifiers:
+  - {fileID: 11400000, guid: 50e0d9ddda022464b899e46190e30466, type: 2}
+  AllowedModifierTypes: 00000000
+  HitsRequired: 0
+  PayoutValue: 0

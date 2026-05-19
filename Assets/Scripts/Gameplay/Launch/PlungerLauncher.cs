@@ -175,6 +175,7 @@ public class PlungerLauncher : MonoBehaviour
 
         launchingBallData.IsLoaded = false;
         launchingBallData.IsInPlay = true;
+        BallAbilityRunner.OnLaunch(launchingBallData);
     }
 
     private void PrepareBallForLaunch(BallView ballView)
@@ -199,20 +200,26 @@ public class PlungerLauncher : MonoBehaviour
         if (GameBootstrap.Context == null || GameBootstrap.Context.Loop == null)
             return;
 
-        if (!GameBootstrap.Context.Loop.TryConsumeReserveForNextBall())
+        if (!GameBootstrap.Context.Loop.TryConsumeReserveForNextBall(out BallRuntimeData reserveBall))
         {
             Debug.Log("Plunger tried to load ball, but reserve/state did not allow it.");
             return;
         }
 
-        BallDefinition nextBallDefinition =
-        GameBootstrap.Context.BallInventory.GetNextBall(ballFactory.DefaultBallDefinition);
+        if (reserveBall == null || reserveBall.Definition == null)
+        {
+            Debug.LogError("Reserve returned invalid ball.");
+            return;
+        }
 
-        BallRuntimeData runtimeData = ballFactory.CreateBall(loadedBallAnchor.position, nextBallDefinition);
+        BallRuntimeData runtimeData = ballFactory.CreateBall(
+            loadedBallAnchor.position,
+            reserveBall.Definition
+        );
 
         if (runtimeData == null)
             return;
-            
+
         BallView ballView = runtimeData.BallObject.GetComponent<BallView>();
 
         runtimeData.IsLoaded = true;
@@ -225,9 +232,8 @@ public class PlungerLauncher : MonoBehaviour
 
         GameBootstrap.Context.BallLifecycle.RegisterSpawn(runtimeData);
         GameBootstrap.Context.BallLifecycle.SetLoadedBall(runtimeData);
-        GameBootstrap.Context.Loop.OnBallLoaded();
 
-       // Debug.Log("Loaded new ball.");
+        GameBootstrap.Context.Loop.OnBallLoaded();
     }
 
     private void KeepLoadedBallSnapped()

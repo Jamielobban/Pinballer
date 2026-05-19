@@ -19,7 +19,7 @@ MonoBehaviour:
   Tint: {r: 1, g: 1, b: 0, a: 1}
   PhysicsMaterial: {fileID: 0}
   Mass: 1
-  GravityScale: 1
+  GravityScale: 2
   LinearDrag: 0
   AngularDrag: 0
   SizeMultiplier: 1

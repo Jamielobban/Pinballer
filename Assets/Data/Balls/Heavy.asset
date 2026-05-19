@@ -19,11 +19,11 @@ MonoBehaviour:
   Tint: {r: 1, g: 0, b: 0, a: 1}
   PhysicsMaterial: {fileID: 0}
   Mass: 2
-  GravityScale: 1.5
+  GravityScale: 2
   LinearDrag: 0
   AngularDrag: 0
   SizeMultiplier: 1.1
   Bounciness: 0.75
   Friction: 0
-  ValueMultiplier: 2
+  ValueMultiplier: 15
   BaseCost: 25

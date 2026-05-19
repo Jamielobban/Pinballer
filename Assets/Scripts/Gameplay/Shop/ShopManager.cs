@@ -12,10 +12,18 @@ public class ShopManager : MonoBehaviour
     [Header("Shop Settings")]
     [SerializeField] private int packOfferCount = 3;
 
+    [Header("Reroll")]
+    [SerializeField] private int baseRerollCost = 5;
+    [SerializeField] private int rerollCostIncrease = 3;
+
     private readonly List<ShopPackOffer> _currentPacks = new List<ShopPackOffer>();
+
     private bool _hasRolledForCurrentShop;
+    private bool _isSelectingRerollTarget;
+    private int _rerollsThisShop;
 
     public IReadOnlyList<ShopPackOffer> CurrentPacks => _currentPacks;
+    public bool IsSelectingRerollTarget => _isSelectingRerollTarget;
 
     public event System.Action PacksChanged;
 
@@ -49,13 +57,11 @@ public class ShopManager : MonoBehaviour
             return;
         }
 
-        // These are still the same shop phase.
         if (state == GameState.BoardEdit || state == GameState.PackOpening)
             return;
 
-        // Only reset after leaving the whole shop/build phase,
-        // like starting a round.
         _hasRolledForCurrentShop = false;
+        _isSelectingRerollTarget = false;
     }
 
     private void EnterShop()
@@ -64,7 +70,46 @@ public class ShopManager : MonoBehaviour
             return;
 
         _hasRolledForCurrentShop = true;
+        _rerollsThisShop = 0;
+        _isSelectingRerollTarget = false;
+
         RollPacks();
+    }
+
+    public int GetCurrentRerollCost()
+    {
+        return baseRerollCost + (_rerollsThisShop * rerollCostIncrease);
+    }
+
+    public void ToggleRerollMode()
+    {
+        _isSelectingRerollTarget = !_isSelectingRerollTarget;
+
+        Debug.Log(_isSelectingRerollTarget
+            ? "Select a pack to reroll."
+            : "Cancelled reroll mode.");
+
+        PacksChanged?.Invoke();
+    }
+
+    public void CancelRerollMode()
+    {
+        if (!_isSelectingRerollTarget)
+            return;
+
+        _isSelectingRerollTarget = false;
+        PacksChanged?.Invoke();
+    }
+
+    public void OnPackClicked(int index)
+    {
+        if (_isSelectingRerollTarget)
+        {
+            RerollPack(index);
+            return;
+        }
+
+        BuyPack(index);
     }
 
     public void RollPacks()
@@ -80,7 +125,7 @@ public class ShopManager : MonoBehaviour
 
         for (int i = 0; i < packOfferCount; i++)
         {
-            ShopPackOffer offer = GeneratePackOffer();
+            ShopPackOffer offer = GenerateUniquePackOffer(-1);
 
             if (offer != null)
                 _currentPacks.Add(offer);
@@ -104,6 +149,77 @@ public class ShopManager : MonoBehaviour
             PackDefinition = pack,
             Cost = pack.Cost
         };
+    }
+
+    private ShopPackOffer GenerateUniquePackOffer(int replacingIndex)
+    {
+        const int maxAttempts = 20;
+
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            ShopPackOffer candidate = GeneratePackOffer();
+
+            if (candidate == null)
+                continue;
+
+            if (!DoesPackDuplicateCurrent(candidate, replacingIndex))
+                return candidate;
+        }
+
+        return GeneratePackOffer();
+    }
+
+    private bool DoesPackDuplicateCurrent(ShopPackOffer candidate, int replacingIndex)
+    {
+        for (int i = 0; i < _currentPacks.Count; i++)
+        {
+            if (i == replacingIndex)
+                continue;
+
+            ShopPackOffer existing = _currentPacks[i];
+
+            if (existing == null || candidate == null)
+                continue;
+
+            if (existing.PackDefinition == candidate.PackDefinition)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void RerollPack(int index)
+    {
+        if (index < 0 || index >= _currentPacks.Count)
+        {
+            Debug.Log("Invalid pack reroll index.");
+            return;
+        }
+
+        int cost = GetCurrentRerollCost();
+
+        if (!GameBootstrap.Context.Economy.TrySpend(cost))
+        {
+            Debug.Log("Not enough money to reroll pack.");
+            return;
+        }
+
+        ShopPackOffer newOffer = GenerateUniquePackOffer(index);
+
+        if (newOffer == null)
+        {
+            Debug.Log("Could not generate replacement pack.");
+            return;
+        }
+
+        _currentPacks[index] = newOffer;
+        _rerollsThisShop++;
+        _isSelectingRerollTarget = false;
+
+        Debug.Log("Rerolled pack " + (index + 1) + " for " + cost);
+
+        DebugLogPacks();
+        PacksChanged?.Invoke();
     }
 
     public void BuyPack(int index)
@@ -134,31 +250,34 @@ public class ShopManager : MonoBehaviour
         ShopPackDefinition packToOpen = offer.PackDefinition;
 
         _currentPacks.RemoveAt(index);
+        _isSelectingRerollTarget = false;
+
         PacksChanged?.Invoke();
 
         Debug.Log("Bought pack: " + offer.GetDisplayName());
 
         packOpeningManager.OpenPack(packToOpen);
     }
+
     private void DebugLogPacks()
     {
-        //Debug.Log("=== SHOP PACKS ===");
+        Debug.Log("=== SHOP PACKS ===");
 
-        //if (_currentPacks.Count == 0)
-        //{
-            //Debug.Log("No packs.");
-            //return;
-        //}
+        if (_currentPacks.Count == 0)
+        {
+            Debug.Log("No packs.");
+            return;
+        }
 
-        //for (int i = 0; i < _currentPacks.Count; i++)
-        //{
-            //ShopPackOffer offer = _currentPacks[i];
+        for (int i = 0; i < _currentPacks.Count; i++)
+        {
+            ShopPackOffer offer = _currentPacks[i];
 
-            //Debug.Log(
-                //(i + 1) + ": " +
-                //offer.GetDisplayName() +
-                //" | Cost: " + offer.Cost
-            //);
-        //}
+            Debug.Log(
+                (i + 1) + ": " +
+                offer.GetDisplayName() +
+                " | Cost: " + offer.Cost
+            );
+        }
     }
 }

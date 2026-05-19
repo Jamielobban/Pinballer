@@ -4,17 +4,23 @@ public class GameLoopController
     private readonly BallReserveService _ballReserve;
     private readonly BallLifecycleService _ballLifecycle;
     private readonly RoundService _rounds;
+    private readonly BallLotteryService _ballLottery;
+    private readonly StatService _stats;
 
     public GameLoopController(
         StateMachineService stateMachine,
         BallReserveService ballReserve,
         BallLifecycleService ballLifecycle,
-        RoundService rounds)
+        RoundService rounds,
+        BallLotteryService ballLottery,
+        StatService stats)
     {
         _stateMachine = stateMachine;
         _ballReserve = ballReserve;
         _ballLifecycle = ballLifecycle;
         _rounds = rounds;
+        _ballLottery = ballLottery;
+        _stats = stats;
     }
 
     public void StartGame()
@@ -22,11 +28,20 @@ public class GameLoopController
         _stateMachine.EnterState(GameState.ShopBuild);
     }
 
-    public void StartRound()
+   public void StartRound()
     {
         _rounds.StartNextRound();
+
         int targetScore = _rounds.GetCurrentTargetScore();
         GameBootstrap.Context.Score.StartRound(targetScore);
+
+        _ballReserve.Clear();
+
+        _stateMachine.EnterState(GameState.LotteryDraw);
+    }
+
+    public void FinishLotteryDraw()
+    {
         _stateMachine.EnterState(GameState.WaitingForBall);
     }
 
@@ -43,27 +58,33 @@ public class GameLoopController
     public void OnBallLaunched()
     {
         _ballLifecycle.LaunchLoadedBall();
+
         _stateMachine.EnterState(GameState.BallInPlay);
     }
 
     public void OnBallDrained(BallRuntimeData drainedBall)
     {
         _stateMachine.EnterState(GameState.ResolvingDrain);
+
         _ballLifecycle.DrainBall(drainedBall);
 
-        if (_ballReserve.HasReserve())
+        bool hasReserve = _ballReserve.HasReserve();
+        bool hasActiveBalls = _ballLifecycle.GetActiveBallCount() > 0;
+        bool hasLoadedBall = _ballLifecycle.LoadedBall != null;
+
+        if (hasActiveBalls || hasLoadedBall)
+        {
+            _stateMachine.EnterState(GameState.BallInPlay);
+            return;
+        }
+
+        if (hasReserve)
         {
             _stateMachine.EnterState(GameState.WaitingForBall);
             return;
         }
 
-        if (_ballLifecycle.GetActiveBallCount() <= 0)
-        {
-            EndRoundAndEnterShop();
-            return;
-        }
-
-        _stateMachine.EnterState(GameState.BallInPlay);
+        EndRoundAndEnterShop();
     }
 
     public bool CanPrepareNextBall()
@@ -73,12 +94,14 @@ public class GameLoopController
             && _ballLifecycle.LoadedBall == null;
     }
 
-    public bool TryConsumeReserveForNextBall()
+    public bool TryConsumeReserveForNextBall(out BallRuntimeData ball)
     {
+        ball = null;
+
         if (!CanPrepareNextBall())
             return false;
 
-        return _ballReserve.TryConsumeOne();
+        return _ballReserve.TryConsumeOne(out ball);
     }
 
     private void EndRoundAndEnterShop()
@@ -91,7 +114,8 @@ public class GameLoopController
             return;
         }
 
-        _stateMachine.EnterState(GameState.ShopBuild);
+        // Do not auto-enter shop.
+        // RoundResultPanelView will send player to ShopBuild.
     }
 
     public void EnterBoardEdit()

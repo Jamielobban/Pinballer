@@ -22,7 +22,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 233a30bfbf3327e44a52c74657073fd7, type: 2}
   - {fileID: 11400000, guid: 1c56242576d9f46488155da1f4f2adc1, type: 2}
   - {fileID: 11400000, guid: 59e1ec24395f22b4baef527a658c961d, type: 2}
-  UpgradeOfferChancePercent: 30
-  ModifierChancePercent: 70
-  ExtraModifierChancePercent: 20
+  UpgradeOfferChancePercent: 100
+  ModifierChancePercent: 0
+  ExtraModifierChancePercent: 0
   ModifierCost: 5

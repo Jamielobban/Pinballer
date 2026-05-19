@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-public class BumperView : MonoBehaviour, IPlaceableView
+public class BumperView : MonoBehaviour, IPlaceableView, IBoardHittable
 {
     [Header("Identity")]
     [SerializeField] private string sourceId = "bumper";
@@ -68,40 +68,30 @@ public class BumperView : MonoBehaviour, IPlaceableView
         RefreshDebug();
     }
 
-    private void EnsureRuntimeExists()
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (_runtime != null)
+        BallView ballView = collision.collider.GetComponent<BallView>();
+        if (ballView == null)
             return;
 
-        if (defaultDefinition == null)
-            return;
+        ContactPoint2D contact = collision.GetContact(0);
 
-        _runtime = new PlaceableRuntimeData
-        {
-            Definition = defaultDefinition,
-            Instance = gameObject
-        };
-
-        if (defaultDefinition.DefaultModifiers != null)
-            _runtime.Modifiers.AddRange(defaultDefinition.DefaultModifiers);
+        HandleBallHit(ballView, contact);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    public void HandleBallHit(BallView ballView, ContactPoint2D contact)
     {
         if (GameBootstrap.Context == null)
             return;
 
         EnsureRuntimeExists();
 
-        BallView ballView = collision.collider.GetComponent<BallView>();
         if (ballView == null)
             return;
 
         BallRuntimeData ballData = ballView.RuntimeData;
         if (ballData == null)
             return;
-
-        ContactPoint2D contact = collision.GetContact(0);
 
         float finalForce = CalculateFinalForce();
 
@@ -139,10 +129,31 @@ public class BumperView : MonoBehaviour, IPlaceableView
             GameBootstrap.Context.Score.AddScore(payout);
         }
 
-        RaiseHitSignal(ballData, contact.point, payout);
+        HitEventData hitData = CreateHitData(ballData, contact.point, payout);
+
+        GameBootstrap.Context.Signals.RaiseHitScored(hitData);
+        BallAbilityRunner.OnHit(ballData, hitData);
 
         RefreshDebug();
         PlayHitFeedback();
+    }
+
+    private void EnsureRuntimeExists()
+    {
+        if (_runtime != null)
+            return;
+
+        if (defaultDefinition == null)
+            return;
+
+        _runtime = new PlaceableRuntimeData
+        {
+            Definition = defaultDefinition,
+            Instance = gameObject
+        };
+
+        if (defaultDefinition.DefaultModifiers != null)
+            _runtime.Modifiers.AddRange(defaultDefinition.DefaultModifiers);
     }
 
     private int CalculateFinalPayout(BallRuntimeData ballData)
@@ -157,8 +168,8 @@ public class BumperView : MonoBehaviour, IPlaceableView
         value += globalMoneyBonus;
         value += globalBumperBonus;
 
-        int ballMultiplier = Mathf.Max(1, ballData.ValueMultiplier);
-        value *= ballMultiplier;
+        float ballMultiplier = Mathf.Max(1f, ballData.ValueMultiplier);
+        value = Mathf.RoundToInt(value * ballMultiplier);
 
         return Mathf.Max(1, value);
     }
@@ -190,9 +201,9 @@ public class BumperView : MonoBehaviour, IPlaceableView
         );
     }
 
-    private void RaiseHitSignal(BallRuntimeData ballData, Vector2 hitPoint, int finalValue)
+    private HitEventData CreateHitData(BallRuntimeData ballData, Vector2 hitPoint, int finalValue)
     {
-        HitEventData hitData = new HitEventData
+        return new HitEventData
         {
             SourceId = sourceId,
             SourceType = HitSourceType.Bumper,
@@ -203,8 +214,6 @@ public class BumperView : MonoBehaviour, IPlaceableView
             Position = hitPoint,
             Ball = ballData
         };
-
-        GameBootstrap.Context.Signals.RaiseHitScored(hitData);
     }
 
     private void RefreshDebug()

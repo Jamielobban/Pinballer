@@ -135,8 +135,21 @@ public class UISlideTrayView : MonoBehaviour
         }
 
         _isAllowed =
-            GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild) ||
-            GameBootstrap.Context.StateMachine.IsInState(GameState.BoardEdit);
+            GameBootstrap.Context.StateMachine.IsInState(GameState.WaitingForBall) 
+            ||
+            GameBootstrap.Context.StateMachine.IsInState(GameState.BallLoaded)
+            ||
+            GameBootstrap.Context.StateMachine.IsInState(GameState.BallLaunching)
+            ||
+            GameBootstrap.Context.StateMachine.IsInState(GameState.BallInPlay)
+            ||
+            GameBootstrap.Context.StateMachine.IsInState(GameState.ResolvingDrain)
+            ||
+            GameBootstrap.Context.StateMachine.IsInState(GameState.Paused)
+            ||
+            GameBootstrap.Context.StateMachine.IsInState(GameState.ShopBuild)
+            ||
+            GameBootstrap.Context.StateMachine.IsInState(GameState.LotteryDraw);;
 
         if (!_isAllowed)
             Hide();
